@@ -68,6 +68,10 @@
 #include "../core/PhysiCell.h"
 #include "../modules/PhysiCell_standard_modules.h" 
 
+#include "./submodel_data_structures.h" 
+#include "./immune_submodel.h" 
+
+
 using namespace BioFVM; 
 using namespace PhysiCell;
 
@@ -81,9 +85,14 @@ void setup_microenvironment( void );
 
 // custom pathology coloring function 
 
-std::vector<std::string> my_coloring_function( Cell* );
+std::vector<std::string> immune_coloring_function( Cell* );
 
 // custom functions can go here 
+
+
+
+
+
 
 void predator_hunting_function( Cell* pCell, Phenotype& phenotype, double dt ); 
 void predator_cycling_function( Cell* pCell, Phenotype& phenotype, double dt ); 

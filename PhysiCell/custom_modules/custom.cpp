@@ -191,10 +191,12 @@ void setup_tissue( void )
 	return; 
 }
 
-std::vector<std::string> my_coloring_function( Cell* pCell )
+std::vector<std::string> immune_coloring_function( Cell* pCell )
 {
-	static int prey_type = get_cell_definition( "prey" ).type; 
-	static int predator_type = get_cell_definition( "predator" ).type; 
+	static int epithelial_type = get_cell_definition( "?" ).type; 
+	static int CD8_Tcell_type = get_cell_definition( "CD8_Tcell" ).type; 
+	
+/*	
 	
 	// start with flow cytometry coloring 
 	

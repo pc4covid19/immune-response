@@ -45,7 +45,7 @@ PhysiCell_pugixml.o PhysiCell_settings.o
 
 # put your custom objects here (they should be in the custom_modules directory)
 
-PhysiCell_custom_module_OBJECTS := custom.o submodel_data_structures.o 
+PhysiCell_custom_module_OBJECTS := custom.o submodel_data_structures.o immune_submodel.o
 
 pugixml_OBJECTS := pugixml.o
 
@@ -142,6 +142,9 @@ custom.o: ./custom_modules/custom.cpp
 	
 submodel_data_structures.o: ./custom_modules/submodel_data_structures.cpp
 	$(COMPILE_COMMAND) -c ./custom_modules/submodel_data_structures.cpp 
+
+immune_submodel.o: ./custom_modules/immune_submodel.cpp
+	$(COMPILE_COMMAND) -c ./custom_modules/immune_submodel.cpp 
 
 # cleanup
 

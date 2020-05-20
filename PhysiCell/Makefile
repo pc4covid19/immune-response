@@ -1,5 +1,5 @@
 VERSION := $(shell grep . VERSION.txt | cut -f1 -d:)
-PROGRAM_NAME := project
+PROGRAM_NAME := immmune-submodel
 
 CC := g++
 # CC := g++-mp-7 # typical macports compiler name
@@ -45,7 +45,7 @@ PhysiCell_pugixml.o PhysiCell_settings.o
 
 # put your custom objects here (they should be in the custom_modules directory)
 
-PhysiCell_custom_module_OBJECTS := custom.o
+PhysiCell_custom_module_OBJECTS := custom.o submodel_data_structures.o 
 
 pugixml_OBJECTS := pugixml.o
 
@@ -139,6 +139,9 @@ PhysiCell_settings.o: ./modules/PhysiCell_settings.cpp
 
 custom.o: ./custom_modules/custom.cpp 
 	$(COMPILE_COMMAND) -c ./custom_modules/custom.cpp
+	
+submodel_data_structures.o: ./custom_modules/submodel_data_structures.cpp
+	$(COMPILE_COMMAND) -c ./custom_modules/submodel_data_structures.cpp 
 
 # cleanup
 

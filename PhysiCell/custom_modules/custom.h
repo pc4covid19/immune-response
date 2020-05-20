@@ -69,7 +69,7 @@
 #include "../modules/PhysiCell_standard_modules.h" 
 
 #include "./submodel_data_structures.h" 
-#include "./immune_submodel.h" 
+#include "./immune_submodels.h" 
 
 
 using namespace BioFVM; 
@@ -89,12 +89,9 @@ std::vector<std::string> immune_coloring_function( Cell* );
 
 // custom functions can go here 
 
-
-
-
-
-
+/*
 void predator_hunting_function( Cell* pCell, Phenotype& phenotype, double dt ); 
 void predator_cycling_function( Cell* pCell, Phenotype& phenotype, double dt ); 
 
 void prey_cycling_function( Cell* pCell , Phenotype& phenotype, double dt ); 
+*/

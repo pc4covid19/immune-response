@@ -8,7 +8,10 @@ Submodel_Information::Submodel_Information( void )
 {
 	name = "none";
 	version = "-1"; 
+	
 	main_function = NULL; 
+	phenotype_function = NULL; 
+	mechanics_function = NULL; 
 	
 	microenvironment_variables.resize(0); 
 	cell_variables.resize(0); // custom data  
@@ -32,9 +35,30 @@ void Submodel_Information::register_model( void )
 		}
 		if( found_it == false )
 		{
+			std::cout << "Warning: did not find " << cell_variables[n] 
+				<< " in default cell definition!" << std::endl; 
+			std::cout << "Adding it now ... " << std::endl; 
 			cell_defaults.custom_data.add_variable( cell_variables[n] , "none", 0.0 ); 
 		}
 		
+	}
+	
+	// make sure that hte microenvironment has all the necessary variables 
+	for( int n = 0 ; n < microenvironment_variables.size() ; n++ )
+	{
+		// let's do this a bit manually (and inefficiently), but safely. 
+		bool found_it = false; 
+		int index = microenvironment.find_density_index( microenvironment_variables[n] ); 
+		if( index >= 0 )
+		{ found_it = true; }
+
+		if( found_it == false )
+		{
+			std::cout << "Error: did not find " << microenvironment_variables[n] 
+				<< " in microenvironment!" << std::endl; 
+				
+			exit(-1);
+		}
 	}
 	
 	// add the model to the registry of submodels 

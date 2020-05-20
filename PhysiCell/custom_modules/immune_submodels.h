@@ -6,11 +6,13 @@ using namespace PhysiCell;
 
 #include "./submodel_data_structures.h" 
 
-#ifndef __immune_submodel__
-#define __immune_submodel__
+#ifndef __immune_submodels__
+#define __immune_submodels__
 
+/*
 void immune_submodel_setup( void );
 void immune_submodel_model( Cell* pCell, Phenotype& phenotype, double dt );
+*/
 
 void CD8_Tcell_phenotype( Cell* pCell, Phenotype& phenotype, double dt ); 
 void CD8_Tcell_mechanics( Cell* pCell, Phenotype& phenotype, double dt ); 
@@ -20,7 +22,6 @@ void macrophage_mechanics( Cell* pCell, Phenotype& phenotype, double dt );
 
 void neutrophil_phenotype( Cell* pCell, Phenotype& phenotype, double dt ); 
 void neutrophil_mechanics( Cell* pCell, Phenotype& phenotype, double dt ); 
-
 
 // this needs to be done on faster time scale; 
 // void receptor_dynamics_model( double dt ); 

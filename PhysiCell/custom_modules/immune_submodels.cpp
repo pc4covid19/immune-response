@@ -1,35 +1,41 @@
-#include "./receptor_dynamics.h" 
+#include "./immune_submodels.h" 
 
 using namespace PhysiCell; 
 
-Submodel_Information immune_submodel_info; 
+Submodel_Information CD8_submodel_info; 
+Submodel_Information Macrophage_submodel_info; 
+Submodel_Information Neutrophil_submodel_info; 
 
+/*
 void immune_submodel_setup( void )
 {
-	receptor_dynamics_info.name = "receptor dynamics"; 
-	receptor_dynamics_info.version = "0.2.0";
-	receptor_dynamics_info.main_function= receptor_dynamics_model; 
+	immune_submodel_info.name = "immune submodel"; 
+	immune_submodel_info.version = "0.0.1";
+	immune_submodel_info.main_function= NULL; // receptor_dynamics_model; 
 	
 	// what variables and parameters do you need? 
 	
-	receptor_dynamics_info.cell_variables.push_back( "unbound external ACE2" ); 
-	receptor_dynamics_info.cell_variables.push_back( "bound external ACE2" ); 
-	receptor_dynamics_info.cell_variables.push_back( "unbound internal ACE2" ); 
-	receptor_dynamics_info.cell_variables.push_back( "bound internal ACE2" ); 
+	immune_submodel_info.cell_variables.push_back( "unbound external ACE2" ); 
+	immune_submodel_info.cell_variables.push_back( "bound external ACE2" ); 
+	immune_submodel_info.cell_variables.push_back( "unbound internal ACE2" ); 
+	immune_submodel_info.cell_variables.push_back( "bound internal ACE2" ); 
 	
-	receptor_dynamics_info.cell_variables.push_back( "ACE2 binding rate" ); 
-	receptor_dynamics_info.cell_variables.push_back( "ACE2 endocytosis rate" ); 
-	receptor_dynamics_info.cell_variables.push_back( "ACE2 cargo release rate" ); 	
-	receptor_dynamics_info.cell_variables.push_back( "ACE2 recycling rate" ); 
+	immune_submodel_info.cell_variables.push_back( "ACE2 binding rate" ); 
+	immune_submodel_info.cell_variables.push_back( "ACE2 endocytosis rate" ); 
+	immune_submodel_info.cell_variables.push_back( "ACE2 cargo release rate" ); 	
+	immune_submodel_info.cell_variables.push_back( "ACE2 recycling rate" ); 
 	
-	// submodel_registry.register_model( receptor_dynamics_info ); 
-	receptor_dynamics_info.register_model(); 
+	// submodel_registry.register_model( immune_submodel_info ); 
+	immune_submodel_info.register_model(); 
 	
 	return; 
 }
-
+*/
+/*
 extern Cell_Definition lung_epithelium; 
+*/
 
+/*
 void receptor_dynamics_model( Cell* pCell, Phenotype& phenotype, double dt )
 {
 	// bookkeeping -- find microenvironment variables we need
@@ -120,7 +126,9 @@ void receptor_dynamics_model( Cell* pCell, Phenotype& phenotype, double dt )
 	
 	return; 
 }
+*/
 
+/*
 void receptor_dynamics_model( double dt )
 {
 	#pragma omp parallel for 
@@ -132,4 +140,5 @@ void receptor_dynamics_model( double dt )
 	
 	return; 
 }
+*/
 	

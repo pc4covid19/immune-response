@@ -105,6 +105,16 @@ void create_cell_types( void )
 	   This is a good place to set custom functions. 
 	*/ 
 	
+	
+	// register the submodels 
+	// (which ensures that the cells have all the internal variables they need) 
+	
+	//receptor_dynamics_model_setup(); 
+	//internal_virus_model_setup();
+	//internal_virus_response_model_setup();
+	submodel_registry.display( std::cout ); 	
+	
+/*	
 	if( parameters.bools("predators_eat_prey") == true )
 	{ get_cell_definition("predator").functions.custom_cell_rule = predator_hunting_function; }
 
@@ -113,6 +123,7 @@ void create_cell_types( void )
 
 	if( parameters.bools("prey_quorom_effect") == true )
 	{ get_cell_definition("prey").functions.update_phenotype = prey_cycling_function; }
+*/
 		
 	/*
 	   This builds the map of cell definitions and summarizes the setup. 
@@ -163,7 +174,7 @@ void setup_tissue( void )
 	Cell* pC;
 	
 	// place prey 
-	
+/*	
 	for( int n = 0 ; n < parameters.ints("number_of_prey") ; n++ )
 	{
 		std::vector<double> position = {0,0,0}; 
@@ -174,34 +185,22 @@ void setup_tissue( void )
 		pC = create_cell( get_cell_definition("prey") ); 
 		pC->assign_position( position );
 	}
-	
-	// place predators 
-	
-	for( int n = 0 ; n < parameters.ints("number_of_predators") ; n++ )
-	{
-		std::vector<double> position = {0,0,0}; 
-		position[0] = Xmin + UniformRandom()*Xrange; 
-		position[1] = Ymin + UniformRandom()*Yrange; 
-		position[2] = Zmin + UniformRandom()*Zrange; 
-		
-		pC = create_cell( get_cell_definition("predator") ); 
-		pC->assign_position( position );
-	}	
+*/	
 	
 	return; 
 }
 
 std::vector<std::string> immune_coloring_function( Cell* pCell )
 {
-	static int epithelial_type = get_cell_definition( "?" ).type; 
+	static int lung_epithelial_type = get_cell_definition( "?" ).type; 
 	static int CD8_Tcell_type = get_cell_definition( "CD8_Tcell" ).type; 
 	
-/*	
 	
 	// start with flow cytometry coloring 
 	
-	std::vector<std::string> output = false_cell_coloring_cytometry(pCell); 
-	
+	std::vector<std::string> output = {"black", "black", "black" , "black" };	
+	// false_cell_coloring_cytometry(pCell); 
+/*	
 	// color live prey 
 		
 	if( pCell->phenotype.death.dead == false && pCell->type == prey_type )
@@ -217,6 +216,7 @@ std::vector<std::string> immune_coloring_function( Cell* pCell )
 		 output[0] = parameters.strings("predator_color");  
 		 output[2] = parameters.strings("predator_color");  
 	}
+	*/
 	
 	return output; 
 }

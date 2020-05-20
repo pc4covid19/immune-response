@@ -2,9 +2,63 @@
 
 using namespace PhysiCell; 
 
+std::string immune_submodels_version = "0.0.1"; 
+
+// Submodel_Information Immune_submodels_info; // not needed for now 
+
 Submodel_Information CD8_submodel_info; 
 Submodel_Information Macrophage_submodel_info; 
 Submodel_Information Neutrophil_submodel_info; 
+
+void CD8_Tcell_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
+{
+	
+	
+	
+	
+	
+	
+	
+	
+	return; 
+}
+
+void CD8_Tcell_mechanics( Cell* pCell, Phenotype& phenotype, double dt )
+{
+	
+	
+	
+	return; 
+}
+
+void macrophage_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
+{
+	
+	
+	return; 
+}
+
+void macrophage_mechanics( Cell* pCell, Phenotype& phenotype, double dt )
+{
+	
+	
+	return; 
+}
+
+void neutrophil_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
+{
+	
+	
+	return; 
+}
+
+void neutrophil_mechanics( Cell* pCell, Phenotype& phenotype, double dt )
+{
+	
+	
+	return; 
+}
+
 
 /*
 void immune_submodel_setup( void )
@@ -141,4 +195,74 @@ void receptor_dynamics_model( double dt )
 	return; 
 }
 */
+
+
+void immune_submodels_setup( void )
+{
+	Cell_Definition* pCD;
 	
+	// 
+	// set up CD8 Tcells
+		// set version info 
+	CD8_submodel_info.name = "CD8 Tcell model"; 
+	CD8_submodel_info.version = immune_submodels_version; 
+		// set functions 
+	CD8_submodel_info.main_function = NULL; 
+	CD8_submodel_info.phenotype_function = CD8_Tcell_phenotype; 
+	CD8_submodel_info.mechanics_function = CD8_Tcell_mechanics; 
+		// what microenvironment variables do you expect? 
+	CD8_submodel_info.microenvironment_variables.push_back( "virion" ); 
+	CD8_submodel_info.microenvironment_variables.push_back( "interferon 1" ); 
+	CD8_submodel_info.microenvironment_variables.push_back( "pro-inflammatory cytokine" ); 
+	CD8_submodel_info.microenvironment_variables.push_back( "chemokine" ); 
+		// what custom data do I need? 
+	//CD8_submodel_info.cell_variables.push_back( "something" ); 
+		// register the submodel  
+	CD8_submodel_info.register_model();	
+		// set functions for the corresponding cell definition 
+	pCD = find_cell_definition( "CD8 Tcell" ); 
+	pCD->functions.update_phenotype = CD8_submodel_info.phenotype_function;
+	pCD->functions.custom_cell_rule = CD8_submodel_info.mechanics_function;
+	
+	// set up macrophages
+	Macrophage_submodel_info = CD8_submodel_info; // much shared information 
+		// set version info 
+	Macrophage_submodel_info.name = "macrophage model"; 
+	Macrophage_submodel_info.version = immune_submodels_version; 
+		// set functions 
+	Macrophage_submodel_info.main_function = NULL; 
+	Macrophage_submodel_info.phenotype_function = macrophage_phenotype; 
+	Macrophage_submodel_info.mechanics_function = macrophage_mechanics; 
+		// what microenvironment variables do you expect? 
+	// nothing unique 
+		// what custom data do I need? 
+	//CD8_submodel_info.cell_variables.push_back( "something" ); 
+		// register the submodel  
+	Macrophage_submodel_info.register_model();	
+		// set functions for the corresponding cell definition 
+	pCD = find_cell_definition( "macrophage" ); 
+	pCD->functions.update_phenotype = Macrophage_submodel_info.phenotype_function;
+	pCD->functions.custom_cell_rule = Macrophage_submodel_info.mechanics_function;
+	
+	// set up neutrophils 
+	// set up macrophages
+	Neutrophil_submodel_info = CD8_submodel_info; // much shared information 
+		// set version info 
+	Neutrophil_submodel_info.name = "neutrophil model"; 
+	Neutrophil_submodel_info.version = immune_submodels_version; 
+		// set functions 
+	Neutrophil_submodel_info.main_function = NULL; 
+	Neutrophil_submodel_info.phenotype_function = neutrophil_phenotype; 
+	Neutrophil_submodel_info.mechanics_function = neutrophil_mechanics; 
+		// what microenvironment variables do you expect? 
+	// nothing unique 
+		// what custom data do I need? 
+	//CD8_submodel_info.cell_variables.push_back( "something" ); 
+		// register the submodel  
+	Neutrophil_submodel_info.register_model();	
+		// set functions for the corresponding cell definition 
+	pCD = find_cell_definition( "neutrophil" ); 
+	pCD->functions.update_phenotype = Neutrophil_submodel_info.phenotype_function;
+	pCD->functions.custom_cell_rule = Neutrophil_submodel_info.mechanics_function;	
+	
+}

@@ -85,6 +85,8 @@ void setup_microenvironment( void );
 
 // custom pathology coloring function 
 
+std::string blue_yellow_interpolation( double min, double val, double max ); 
+
 std::vector<std::string> immune_coloring_function( Cell* );
 
 // custom functions can go here 

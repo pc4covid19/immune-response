@@ -15,7 +15,7 @@ class Submodel_Information
 	std::string version;
 	
 	// for use in the main program call 
-	void(*main_function)(Cell*,Phenotype&,double); 
+	void(*main_function)(double); 
 	
 	// for use in cell phenotype functions 
 	void(*phenotype_function)(Cell*,Phenotype&,double); 
@@ -36,12 +36,14 @@ class Submodel_Information
 class Submodel_Registry
 {
  private:
-	std::vector<Submodel_Information*> submodels; 
  public:  
+	std::vector<Submodel_Information*> submodels; 
 	void register_model( Submodel_Information& model ); 
 	void display( std::ostream& os ); 
 	
 };
+
+void execute_all_submodel_main_functions( double dt );
 
 extern Submodel_Registry submodel_registry; 
 

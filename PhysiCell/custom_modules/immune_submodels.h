@@ -23,6 +23,8 @@ void macrophage_mechanics( Cell* pCell, Phenotype& phenotype, double dt );
 void neutrophil_phenotype( Cell* pCell, Phenotype& phenotype, double dt ); 
 void neutrophil_mechanics( Cell* pCell, Phenotype& phenotype, double dt ); 
 
+void immune_submodels_setup( void ); 
+
 // this needs to be done on faster time scale; 
 // void receptor_dynamics_model( double dt ); 
 

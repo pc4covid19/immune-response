@@ -70,18 +70,37 @@ void Submodel_Information::display( std::ostream& os )
 {
 	os << "Submodel: " << name << " (Version " << version << ")" << std::endl ;
 	
+	os << "\tmicroenvironment variables: " << std::endl;
+	for( int n = 0 ; n < microenvironment_variables.size(); n++ )
+	{
+		os << "\t\t" << microenvironment_variables[n] << std::endl; 
+	}
+
 	os << "\tcell variables: " << std::endl;
 	for( int n = 0 ; n < cell_variables.size(); n++ )
 	{
 		os << "\t\t" << cell_variables[n] << std::endl; 
 	}
 	
-	os << "\tfunction: " ; 
+	os << "\tfunctions: " << std::endl; 	
+	os << "\t\tmain: "; 
 	if( main_function )
 	{ os << (long long int) main_function; }
 	else
 	{ os << "NULL"; }
 	os << std::endl; 
+	os << "\t\tphenotype: "; 
+	if( phenotype_function )
+	{ os << (long long int) phenotype_function; }
+	else
+	{ os << "NULL"; }
+	os << std::endl; 
+	os << "\t\tmechanics: " ; 
+	if( mechanics_function )
+	{ os << (long long int) mechanics_function; }
+	else
+	{ os << "NULL"; }
+	os << std::endl << std::endl; 
 	
 	return; 
 }
@@ -122,5 +141,14 @@ void Submodel_Registry::display( std::ostream& os )
 	return;
 }
 
+void execute_all_submodel_main_functions( double dt )
+{
+	for( int n = 0 ; n < submodel_registry.submodels.size(); n++ )
+	{
+		if( submodel_registry.submodels[n]->main_function )
+		{ submodel_registry.submodels[n]->main_function( dt ); }
+	}
+	return; 
+}
 	
 

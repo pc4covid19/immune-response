@@ -105,15 +105,14 @@ void create_cell_types( void )
 	   This is a good place to set custom functions. 
 	*/ 
 	
-	
 	// register the submodels 
 	// (which ensures that the cells have all the internal variables they need) 
 	
 	//receptor_dynamics_model_setup(); 
 	//internal_virus_model_setup();
 	//internal_virus_response_model_setup();
-
-//	submodel_registry.display( std::cout ); 	
+	immune_submodels_setup();
+	submodel_registry.display( std::cout ); 	
 	
 /*	
 	if( parameters.bools("predators_eat_prey") == true )
@@ -173,8 +172,31 @@ void setup_tissue( void )
 	// create some of each type of cell 
 	
 	Cell* pC;
+	
+	// uninfected cell 
 	pC = create_cell( get_cell_definition("lung epithelium" ) ); 
 	std::vector<double> position = {0,0,0}; 
+	pC->assign_position( position ); 
+
+	// infected cell 
+	pC = create_cell( get_cell_definition("lung epithelium" ) ); 
+	position = {30,0,0}; 
+	pC->assign_position( position ); 
+	pC->custom_data["assembled_virion"] = 1000.0; 
+
+	// CD8 Tcell 
+	pC = create_cell( get_cell_definition("CD8 Tcell" ) ); 
+	position = {0,150,0}; 
+	pC->assign_position( position ); 
+
+	// macrophage
+	pC = create_cell( get_cell_definition("macrophage" ) ); 
+	position = {0,-150,0}; 
+	pC->assign_position( position ); 
+
+	// neutrophil
+	pC = create_cell( get_cell_definition("neutrophil" ) ); 
+	position = {-150,0,0}; 
 	pC->assign_position( position ); 
 	
 	// place prey 
@@ -194,6 +216,24 @@ void setup_tissue( void )
 	return; 
 }
 
+std::string blue_yellow_interpolation( double min, double val, double max )
+{
+// 	std::string out;
+	
+	double interpolation = (val-min)/(max-min+1e-16); 
+	if( interpolation < 0.0 )
+	{ interpolation = 0.0; } 
+	if( interpolation > 1.0 )
+	{ interpolation = 1.0; }
+	
+	int red_green = (int) floor( 255.0 * interpolation ) ; 
+	int blue = 255 - red_green; 
+
+	char color [1024]; 
+	sprintf( color, "rgb(%u,%u,%u)" , red_green,red_green,blue ); 
+	return color;  
+}
+
 std::vector<std::string> immune_coloring_function( Cell* pCell )
 {
 	static int lung_epithelial_type = get_cell_definition( "lung epithelium" ).type; 
@@ -208,23 +248,25 @@ std::vector<std::string> immune_coloring_function( Cell* pCell )
 
 	if( pCell->phenotype.death.dead == false && pCell->type == lung_epithelial_type )
 	{
-		 output[0] = parameters.strings("lung_epithelium_color");  
-		 output[2] = parameters.strings("lung_epithelium_color");  
-		 output[3] = parameters.strings("lung_epithelium_color");  
+		// color by virion 
+		std::string color = blue_yellow_interpolation( 0.0 , pCell->custom_data["assembled_virion"] , 1000.0 ); 
+		output[0] = color;   
+		output[2] = color; 
+		output[3] = color; 
 	}
 	
 	if( pCell->phenotype.death.dead == false && pCell->type == CD8_Tcell_type )
 	{
-		 output[0] = parameters.strings("CD8_Tcell_color");  
-		 output[2] = parameters.strings("CD8_Tcell_color");  
-		 output[3] = parameters.strings("CD8_Tcell_color");  
+		output[0] = parameters.strings("CD8_Tcell_color");  
+		output[2] = parameters.strings("CD8_Tcell_color");  
+		output[3] = parameters.strings("CD8_Tcell_color");  
 	}
 
 	if( pCell->phenotype.death.dead == false && pCell->type == Macrophage_type )
 	{
-		 output[0] = parameters.strings("Macrophage_color");  
-		 output[2] = parameters.strings("Macrophage_color");  
-		 output[3] = parameters.strings("Macrophage_color");  
+		output[0] = parameters.strings("Macrophage_color");  
+		output[2] = parameters.strings("Macrophage_color");  
+		output[3] = parameters.strings("Macrophage_color");  
 	}
 
 	if( pCell->phenotype.death.dead == false && pCell->type == Neutrophil_type )

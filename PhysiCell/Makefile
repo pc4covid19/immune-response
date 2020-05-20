@@ -1,5 +1,5 @@
 VERSION := $(shell grep . VERSION.txt | cut -f1 -d:)
-PROGRAM_NAME := immmune-submodel
+PROGRAM_NAME := immune-submodel
 
 CC := g++
 # CC := g++-mp-7 # typical macports compiler name

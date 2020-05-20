@@ -112,7 +112,8 @@ void create_cell_types( void )
 	//receptor_dynamics_model_setup(); 
 	//internal_virus_model_setup();
 	//internal_virus_response_model_setup();
-	submodel_registry.display( std::cout ); 	
+
+//	submodel_registry.display( std::cout ); 	
 	
 /*	
 	if( parameters.bools("predators_eat_prey") == true )
@@ -172,6 +173,9 @@ void setup_tissue( void )
 	// create some of each type of cell 
 	
 	Cell* pC;
+	pC = create_cell( get_cell_definition("lung epithelium" ) ); 
+	std::vector<double> position = {0,0,0}; 
+	pC->assign_position( position ); 
 	
 	// place prey 
 /*	
@@ -192,36 +196,48 @@ void setup_tissue( void )
 
 std::vector<std::string> immune_coloring_function( Cell* pCell )
 {
-	static int lung_epithelial_type = get_cell_definition( "?" ).type; 
-	static int CD8_Tcell_type = get_cell_definition( "CD8_Tcell" ).type; 
-	
+	static int lung_epithelial_type = get_cell_definition( "lung epithelium" ).type; 
+	static int CD8_Tcell_type = get_cell_definition( "CD8 Tcell" ).type; 
+	static int Macrophage_type = get_cell_definition( "macrophage" ).type; 
+	static int Neutrophil_type = get_cell_definition( "neutrophil" ).type; 
 	
 	// start with flow cytometry coloring 
 	
-	std::vector<std::string> output = {"black", "black", "black" , "black" };	
+	std::vector<std::string> output = {"white", "black", "white" , "white" };	
 	// false_cell_coloring_cytometry(pCell); 
-/*	
-	// color live prey 
-		
-	if( pCell->phenotype.death.dead == false && pCell->type == prey_type )
-	{
-		 output[0] = parameters.strings("prey_color");  
-		 output[2] = parameters.strings("prey_color");  
-	}
-	
-	// color live predators 
 
-	if( pCell->phenotype.death.dead == false && pCell->type == predator_type )
+	if( pCell->phenotype.death.dead == false && pCell->type == lung_epithelial_type )
 	{
-		 output[0] = parameters.strings("predator_color");  
-		 output[2] = parameters.strings("predator_color");  
+		 output[0] = parameters.strings("lung_epithelium_color");  
+		 output[2] = parameters.strings("lung_epithelium_color");  
+		 output[3] = parameters.strings("lung_epithelium_color");  
 	}
-	*/
 	
+	if( pCell->phenotype.death.dead == false && pCell->type == CD8_Tcell_type )
+	{
+		 output[0] = parameters.strings("CD8_Tcell_color");  
+		 output[2] = parameters.strings("CD8_Tcell_color");  
+		 output[3] = parameters.strings("CD8_Tcell_color");  
+	}
+
+	if( pCell->phenotype.death.dead == false && pCell->type == Macrophage_type )
+	{
+		 output[0] = parameters.strings("Macrophage_color");  
+		 output[2] = parameters.strings("Macrophage_color");  
+		 output[3] = parameters.strings("Macrophage_color");  
+	}
+
+	if( pCell->phenotype.death.dead == false && pCell->type == Neutrophil_type )
+	{
+		 output[0] = parameters.strings("Neutrophil_color");  
+		 output[2] = parameters.strings("Neutrophil_color");  
+		 output[3] = parameters.strings("Neutrophil_color");  
+	}
+
 	return output; 
 }
 
-
+/*
 void predator_hunting_function( Cell* pCell, Phenotype& phenotype, double dt )
 {
 	Cell* pTestCell = NULL; 
@@ -275,3 +291,4 @@ void prey_cycling_function( Cell* pCell , Phenotype& phenotype, double dt )
 	
 	return; 
 }
+*/

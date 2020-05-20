@@ -104,12 +104,12 @@
 		<folder>output</folder> <!-- use . for root --> 
 
 		<full_data>
-			<interval units="min">360</interval>
+			<interval units="min">5</interval>
 			<enable>true</enable>
 		</full_data>
 		
 		<SVG>
-			<interval units="min">60</interval>
+			<interval units="min">5</interval>
 			<enable>true</enable>
 		</SVG>
 		
@@ -265,13 +265,28 @@
 						<use_2D>true</use_2D>
 						<chemotaxis>
 							<enabled>false</enabled>
-							<substrate>cytokine</substrate>
+							<substrate>chemokine</substrate>
 							<direction>1</direction>
 						</chemotaxis>
 					</options>
 				</motility>
-				
+ 
+<!--
 				<secretion>
+					<substrate name="virion">
+						<secretion_rate units="1/min">0</secretion_rate>
+						<secretion_target units="substrate density">1</secretion_target>
+						<uptake_rate units="1/min">0</uptake_rate>
+						<net_export_rate units="total substrate/min">0</net_export_rate> 
+					</substrate> 
+
+					<substrate name="assembled virion">
+						<secretion_rate units="1/min">0</secretion_rate>
+						<secretion_target units="substrate density">1</secretion_target>
+						<uptake_rate units="1/min">0</uptake_rate>
+						<net_export_rate units="total substrate/min">0</net_export_rate> 
+					</substrate> 
+
 					<substrate name="interferon 1">
 						<secretion_rate units="1/min">0</secretion_rate>
 						<secretion_target units="substrate density">1</secretion_target>
@@ -292,15 +307,14 @@
 						<uptake_rate units="1/min">0</uptake_rate>
 						<net_export_rate units="total substrate/min">0</net_export_rate> 
 					</substrate> 
-
 				</secretion>
-
+-->
 				<molecular />
 			</phenotype>
 			<custom_data>  
 				<!-- for internal viral dynamics --> 
-				<virion units="virions">0</viron>
-				<uncoated_virion units="virions"></uncoated_virion>
+				<virion units="virions">0</virion>
+				<uncoated_virion units="virions">0</uncoated_virion>
 				<viral_RNA>0</viral_RNA>
 				<viral_protein>0</viral_protein>
 				<assembled_virion>0</assembled_virion>
@@ -338,7 +352,7 @@
 			</custom_data>
 		</cell_definition>
 		
-		<cell_definition name="lung_epithelium" parent_type="default" ID="1">
+		<cell_definition name="lung epithelium" parent_type="default" ID="1">
 			<phenotype>
 				<motility>  
 					<options>
@@ -352,7 +366,7 @@
 			</custom_data>
 		</cell_definition>
 		
-		<cell_definition name="CD8_Tcell" parent_type="default" ID="2">
+		<cell_definition name="CD8 Tcell" parent_type="default" ID="2">
 			<phenotype>
 				<motility>  
 					<options>
@@ -366,7 +380,7 @@
 			</custom_data>
 		</cell_definition>
 		
-		<cell_definition name="Macrophage" parent_type="default" ID="3">
+		<cell_definition name="macrophage" parent_type="default" ID="3">
 			<phenotype>
 				<motility>  
 					<options>
@@ -380,7 +394,7 @@
 			</custom_data>
 		</cell_definition>		
 
-		<cell_definition name="Neuotrophil" parent_type="default" ID="4">
+		<cell_definition name="neutrophil" parent_type="default" ID="4">
 			<phenotype>
 				<motility>  
 					<options>
@@ -403,9 +417,7 @@
 		<!-- example parameters from the template --> 
 		
 		
-		<!--
-		virus_fraction_released_at_death
-		-->
+
 		
 		<div_ACE2 type="divider" description="--ACE2 receptor model initialization--"/>
 			<ACE2_receptors_per_cell type="double" units="dimensionless" description="number of ACE2 receptors per cell">1000</ACE2_receptors_per_cell>
@@ -413,6 +425,12 @@
 		<div_initialization type="divider" description="---Initialization Options--"/>
 			<multiplicity_of_infection type="double" units="none" description="multiplicity of infection: virions/cells at t=0">0.01</multiplicity_of_infection>
 			<use_single_infected_cell type="bool" units="none" description="Infect center cell with one virion (overrides MOI)">false</use_single_infected_cell>
+
+		<div_colors type="divider" description="---Cell Color Options--"/>
+			<lung_epithelium_color type="string" description="">blue</lung_epithelium_color>
+			<CD8_Tcell_color type="string" description="">red</CD8_Tcell_color>
+			<Macrophage_color type="string" description="">orange</Macrophage_color>
+			<Neutrophil_color type="string" description="">magenta</Neutrophil_color>
 		
 	</user_parameters>
 	

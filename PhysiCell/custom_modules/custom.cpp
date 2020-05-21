@@ -197,17 +197,17 @@ void setup_tissue( void )
 
 	// CD8 Tcell 
 	pC = create_cell( get_cell_definition("CD8 Tcell" ) ); 
-	position = {0,150,0}; 
+	position = {0, 0.4*Xrange,0}; 
 	pC->assign_position( position ); 
 
 	// macrophage
 	pC = create_cell( get_cell_definition("macrophage" ) ); 
-	position = {0,-150,0}; 
+	position = {0,-0.4*Xrange,0}; 
 	pC->assign_position( position ); 
 
 	// neutrophil
 	pC = create_cell( get_cell_definition("neutrophil" ) ); 
-	position = {-150,0,0}; 
+	position = {-0.4*Xrange,0,0}; 
 	pC->assign_position( position ); 
 	
 	// place prey 
@@ -256,6 +256,14 @@ std::vector<std::string> immune_coloring_function( Cell* pCell )
 	
 	std::vector<std::string> output = {"white", "black", "white" , "white" };	
 	// false_cell_coloring_cytometry(pCell); 
+	
+	if( pCell->phenotype.death.dead == true )
+	{
+		output[0] = "black"; 		
+		output[2] = "black"; 		
+		output[3] = "black"; 		
+		return output;
+	}
 
 	if( pCell->phenotype.death.dead == false && pCell->type == lung_epithelial_type )
 	{
@@ -264,27 +272,31 @@ std::vector<std::string> immune_coloring_function( Cell* pCell )
 		output[0] = color;   
 		output[2] = color; 
 		output[3] = color; 
+		return output; 
 	}
 	
 	if( pCell->phenotype.death.dead == false && pCell->type == CD8_Tcell_type )
 	{
 		output[0] = parameters.strings("CD8_Tcell_color");  
 		output[2] = parameters.strings("CD8_Tcell_color");  
-		output[3] = parameters.strings("CD8_Tcell_color");  
+		output[3] = parameters.strings("CD8_Tcell_color"); 
+		return output; 
 	}
 
 	if( pCell->phenotype.death.dead == false && pCell->type == Macrophage_type )
 	{
 		output[0] = parameters.strings("Macrophage_color");  
 		output[2] = parameters.strings("Macrophage_color");  
-		output[3] = parameters.strings("Macrophage_color");  
+		output[3] = parameters.strings("Macrophage_color"); 
+		return output; 
 	}
 
 	if( pCell->phenotype.death.dead == false && pCell->type == Neutrophil_type )
 	{
-		 output[0] = parameters.strings("Neutrophil_color");  
-		 output[2] = parameters.strings("Neutrophil_color");  
-		 output[3] = parameters.strings("Neutrophil_color");  
+		output[0] = parameters.strings("Neutrophil_color");  
+		output[2] = parameters.strings("Neutrophil_color");  
+		output[3] = parameters.strings("Neutrophil_color");  
+		return output; 
 	}
 
 	return output; 

@@ -86,7 +86,7 @@ void CD8_Tcell_mechanics( Cell* pCell, Phenotype& phenotype, double dt )
 		phenotype.motility.is_motile = false; 
 		return; 
 	}
-	phenotype.motility.is_motile = true; 
+	phenotype.motility.is_motile = true; // I suggest eliminating this. 
 	
 	return; 
 }
@@ -95,6 +95,8 @@ void macrophage_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
 {
 	static int apoptosis_index = phenotype.death.find_death_model_index( "apoptosis" ); 
 	static Cell_Definition* pCD = find_cell_definition( "macrophage" ); 
+	
+	// make changes to volume change rate??
 	
 	// if too much debris, comit to apoptosis 	
 	double ingested_debris = ( phenotype.volume.total - pCD->phenotype.volume.total ); 
@@ -106,14 +108,69 @@ void macrophage_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
 
 void macrophage_mechanics( Cell* pCell, Phenotype& phenotype, double dt )
 {
+	std::vector<Cell*> neighbors = pCell->cells_in_my_container(); 
+	
+	if( neighbors.size() == 0 )
+	{ return; } 
+	
+	int n = 0; 
+	Cell* pTestCell = neighbors[n]; 
+	while( n < neighbors.size() )
+	{
+		pTestCell = neighbors[n]; 
+		// if it is not me and not a macrophage 
+		if( pTestCell != pCell && pTestCell->phenotype.death.dead == true && 
+			pTestCell->phenotype.flagged_for_removal == false )
+		{
+/*
+			// calculate distance to the cell 
+			std::vector<double> displacement = pTestCell->position;
+			displacement -= pCell->position;
+			double distance = norm( displacement ); 
+			
+			double max_distance = pCell->phenotype.geometry.radius + 
+				pTestCell->phenotype.geometry.radius; 
+			max_distance *= 1.1; 
+			
+			// if it is not a macrophage, test for viral load 
+			// if high viral load, eat it. 
+*/			
+		
+//			if( pTestCell->phenotype.molecular.internalized_total_substrates[nVirus] 
+//				> parameters.doubles("min_virion_detection_threshold") &&
+//				distance < max_distance )
+			{
+				std::cout << "\t\tnom nom nom" << std::endl; 
+				std::cout << "\t\t\t" << pCell->type << " eats " << pTestCell->type << std::endl; 
+				std::cout << "\t\t\t" << pCell  << " eats " << pTestCell << std::endl; 
+				pCell->ingest_cell( pTestCell ); 
+				return; 
+			}
+			
+		}
+		n++; 
+	}
+	
+	
+	
+	return; 
+	
+/*	
 	// check for contact with dead cell
 	Cell* pTarget = check_for_dead_neighbor_for_interaction( pCell, dt ); 
+	if( !pTarget )
+	{ return; } 
 		
+	// pragma omp critical ??
 	// if found, eat it
-	if( pTarget )
+//	#pragma omp critical
 	{
-		pCell->ingest_cell( pTarget ); 
+		if( pTarget )
+		{
+			pCell->ingest_cell( pTarget ); 
+		}
 	}
+*/
 	
 	return; 
 }

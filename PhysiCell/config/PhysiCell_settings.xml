@@ -109,7 +109,7 @@
 		</full_data>
 		
 		<SVG>
-			<interval units="min">2</interval>
+			<interval units="min">4</interval>
 			<enable>true</enable>
 		</SVG>
 		
@@ -316,7 +316,7 @@
 				<TCell_contact_death_threshold units="min">50</TCell_contact_death_threshold>
 				<max_attachment_distance units="micron">15</max_attachment_distance>
 				<elastic_attachment_coefficient units="1/min">0.01</elastic_attachment_coefficient>
-				<maximum_tolerated_ingested_debris units="micron^3">4000</maximum_tolerated_ingested_debris>
+				<maximum_tolerated_ingested_debris units="micron^3">3000</maximum_tolerated_ingested_debris>
 				
 				<!-- your custom data and parameters go here (for new submodels) --> 
 				
@@ -382,6 +382,9 @@
 		<cell_definition name="macrophage" parent_type="immune" ID="4">
 			<phenotype>
 				<motility>  
+					<chemotaxis>
+						<substrate>pro-inflammatory cytokine</substrate>
+					</chemotaxis>
 				</motility>
 				<secretion>
 				</secretion>
@@ -421,7 +424,7 @@
 			<use_single_infected_cell type="bool" units="none" description="Infect center cell with one virion (overrides MOI)">false</use_single_infected_cell>
 			
 			<number_of_CD8_Tcells type="int" units="none" description="initial number of CD8 T cells">50</number_of_CD8_Tcells>
-			<number_of_macrophages type="int" units="none" description="initial number of macrophages">1</number_of_macrophages>
+			<number_of_macrophages type="int" units="none" description="initial number of macrophages">10</number_of_macrophages>
 			<number_of_neutrophils type="int" units="none" description="initial number of neutrophils">10</number_of_neutrophils>
 			<number_of_dead_cells type="int" units="none" description="initial number of apoptotic epithelial cells">0</number_of_dead_cells>
 			<number_of_infected_cells type="int" units="none" description="initial number of infected epithelial cells">100</number_of_infected_cells>

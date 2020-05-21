@@ -87,7 +87,7 @@
 	</domain>
 	
 	<overall>
-		<max_time units="min">7200</max_time> <!-- 5 days * 24 h * 60 min -->
+		<max_time units="min">720</max_time> <!-- 5 days * 24 h * 60 min -->
 		<time_units>min</time_units>
 		<space_units>micron</space_units>
 	
@@ -104,12 +104,12 @@
 		<folder>output</folder> <!-- use . for root --> 
 
 		<full_data>
-			<interval units="min">360</interval>
+			<interval units="min">60</interval>
 			<enable>true</enable>
 		</full_data>
 		
 		<SVG>
-			<interval units="min">15</interval>
+			<interval units="min">1</interval>
 			<enable>true</enable>
 		</SVG>
 		
@@ -312,9 +312,11 @@
 				<TCell_contact_time type="double" units="min">0.0</TCell_contact_time>
 				<cell_attachment_rate units="1/min">0</cell_attachment_rate>
 				<cell_attachment_lifetime units="min">0</cell_attachment_lifetime>
+				
 				<TCell_contact_death_threshold units="min">50</TCell_contact_death_threshold>
-				<elastic_attachment_coefficient units="1/min">0.1</elastic_attachment_coefficient>
-				<maximum_tolerated_ingested_debris units="micron^3">6000</maximum_tolerated_ingested_debris>
+				<max_attachment_distance units="micron">15</max_attachment_distance>
+				<elastic_attachment_coefficient units="1/min">0.01</elastic_attachment_coefficient>
+				<maximum_tolerated_ingested_debris units="micron^3">4000</maximum_tolerated_ingested_debris>
 				
 				<!-- your custom data and parameters go here (for new submodels) --> 
 				
@@ -342,7 +344,7 @@
 				<motility>  
 					<speed units="micron/min">4</speed>
 					<persistence_time units="min">1</persistence_time>
-					<migration_bias units="dimensionless">1</migration_bias>
+					<migration_bias units="dimensionless">0.5</migration_bias>
 					<options>
 						<enabled>true</enabled>
 						<use_2D>true</use_2D>
@@ -372,7 +374,7 @@
 				</secretion>
 			</phenotype>
 			<custom_data>
-				<cell_attachment_rate units="1/min">1</cell_attachment_rate>
+				<cell_attachment_rate units="1/min">0.2</cell_attachment_rate>
 				<cell_attachment_lifetime units="min">8.5</cell_attachment_lifetime>
 			</custom_data>
 		</cell_definition>
@@ -415,12 +417,12 @@
 			<multiplicity_of_infection type="double" units="none" description="multiplicity of infection: virions/cells at t=0">0.01</multiplicity_of_infection>
 			<use_single_infected_cell type="bool" units="none" description="Infect center cell with one virion (overrides MOI)">false</use_single_infected_cell>
 			
-			<number_of_CD8_Tcells type="int" units="none" description="initial number of CD8 T cells">10</number_of_CD8_Tcells>
-			<number_of_macrophages type="int" units="none" description="initial number of macrophages">10</number_of_macrophages>
-			<number_of_neutrophils type="int" units="none" description="initial number of neutrophils">10</number_of_neutrophils>
-			<number_of_dead_cells type="int" units="none" description="initial number of apoptotic epithelial cells">10</number_of_dead_cells>
-			<number_of_infected_cells type="int" units="none" description="initial number of infected epithelial cells">10</number_of_infected_cells>
-			<number_of_uninfected_cells type="int" units="none" description="initial number of uninfected epithelial cells">10</number_of_uninfected_cells>
+			<number_of_CD8_Tcells type="int" units="none" description="initial number of CD8 T cells">5</number_of_CD8_Tcells>
+			<number_of_macrophages type="int" units="none" description="initial number of macrophages">0</number_of_macrophages>
+			<number_of_neutrophils type="int" units="none" description="initial number of neutrophils">0</number_of_neutrophils>
+			<number_of_dead_cells type="int" units="none" description="initial number of apoptotic epithelial cells">0</number_of_dead_cells>
+			<number_of_infected_cells type="int" units="none" description="initial number of infected epithelial cells">1</number_of_infected_cells>
+			<number_of_uninfected_cells type="int" units="none" description="initial number of uninfected epithelial cells">0</number_of_uninfected_cells>
 
 
 		<div_colors type="divider" description="---Cell Color Options--"/>

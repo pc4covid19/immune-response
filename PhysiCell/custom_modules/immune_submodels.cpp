@@ -12,21 +12,80 @@ Submodel_Information Neutrophil_submodel_info;
 
 void CD8_Tcell_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
 {
+	// for 
 	
-	
-	
-	
-	
-	
-	
+	if( pCell->state.neighbors.size() > 0 )
+	{ std::cout << "adhered Tcell " << pCell << std::endl; } 
 	
 	return; 
 }
 
 void CD8_Tcell_mechanics( Cell* pCell, Phenotype& phenotype, double dt )
 {
+	// if I'm dead, don't bother 
+	if( phenotype.death.dead == true )
+	{
+		// the cell death functions don't automatically turn off custom functions, 
+		// since those are part of mechanics. 
+		
+		// Let's just fully disable now. 
+		pCell->functions.custom_cell_rule = NULL; 
+		return; 
+	}	
 	
-	// check for contact with infected cell, and induce apoptosis 
+	// if I am not adhered to a cell, turn motility on 
+	if( pCell->state.neighbors.size() == 0 )
+	{ phenotype.motility.is_motile = true; }
+	else
+	{ phenotype.motility.is_motile = false; }	
+	
+	// check for contact with infected cell 
+	
+	// if I'm adhered to something ... 
+	if( pCell->state.neighbors.size() > 0 )
+	{
+		// add the elastic forces 
+		extra_elastic_attachment_mechanics( pCell, phenotype, dt );
+		
+		// induce damage to whatever we're adhered to 
+		#pragma omp critical
+		{
+			for( int n = 0; n < pCell->state.neighbors.size() ; n++ )
+			{
+				pCell->state.neighbors[n]->custom_data["TCell_contact_time"] += dt; 
+			}
+		}
+
+		// decide whether to detach 
+		bool detach_me = false; 
+		
+		if( UniformRandom() < dt / ( pCell->custom_data["cell_attachment_lifetime"] + 1e-15 ) )
+		{ detach_me = true; }
+		
+		// if I detach, go through the process 
+		if( detach_me )
+		{
+			// detach all attached cells 
+			for( int n = 0; n < pCell->state.neighbors.size() ; n++ )
+			{
+				detach_cells( pCell, pCell->state.neighbors[n] ); 
+			}
+			// resume motile behavior 
+			phenotype.motility.is_motile = true; 
+		}
+		return; 
+	}
+	
+	// I'm not attached, look for cells nearby and try to attach
+	
+	// if this returns non-NULL, we're now attached to a cell 
+	if( immune_cell_check_neighbors_for_attachment( pCell , dt) )
+	{
+		// set motility off 
+		phenotype.motility.is_motile = false; 
+		return; 
+	}
+	phenotype.motility.is_motile = true; 
 	
 	return; 
 }
@@ -46,10 +105,9 @@ void macrophage_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
 
 void macrophage_mechanics( Cell* pCell, Phenotype& phenotype, double dt )
 {
-	
 	// check for contact with dead cell
 	Cell* pTarget = check_for_dead_neighbor_for_interaction( pCell, dt ); 
-	
+		
 	// if found, eat it
 	if( pTarget )
 	{
@@ -394,4 +452,78 @@ void detach_cells( Cell* pCell_1 , Cell* pCell_2 )
 	return; 
 }
 
+
+
+bool attempt_immune_cell_attachment( Cell* pAttacker, Cell* pTarget , double dt )
+{
+	// if the target is not infected, give up 
+	if( pTarget->custom_data[ "assembled_virion" ] < 1 )
+	{ return false; }
+		
+	// if the target cell is dead, give up 
+	if( pTarget->phenotype.death.dead == true )
+	{ return false; } 
+
+	// if the target cell is too far away, give up 
+	std::vector<double> displacement = pTarget->position - pAttacker->position;
+	double distance_scale = norm( displacement ); 
+	if( distance_scale > pAttacker->custom_data["max_attachment_distance"] )
+	{ return false; } 
+
+	// now, get the attachment probability 
+	
+	double attachment_probability = pAttacker->custom_data["cell_attachment_rate"] * dt; 
+
+	// don't need to cap it at 1.00: if prob > 100%, 
+	// then this statement always evaluates as true, 
+	// just the same as capping probability at 100% 
+	if( UniformRandom() <= attachment_probability )
+	{
+		attach_cells( pAttacker, pTarget ); 
+		return true; 
+	}
+	
+	return false; 	
+}
+
+Cell* immune_cell_check_neighbors_for_attachment( Cell* pAttacker , double dt )
+{
+	std::vector<Cell*> nearby = pAttacker->cells_in_my_container(); 
+	int i = 0; 
+	while( i < nearby.size() )
+	{
+		// don't try to kill yourself 
+		if( nearby[i] != pAttacker )
+		{
+			if( attempt_immune_cell_attachment( pAttacker, nearby[i] , dt ) )
+			{
+				return nearby[i]; 
+			}
+		}
+		i++; 
+	}
+	
+	return NULL; 
+}
+
+void TCell_induced_apoptosis( Cell* pCell, Phenotype& phenotype, double dt )
+{
+	static int apoptosis_index = phenotype.death.find_death_model_index( "apoptosis" ); 
+	if( pCell->custom_data["TCell_contact_time"] > pCell->custom_data["TCell_contact_death_threshold"] )
+	{
+		std::cout << "I die now" << std::endl; 
+		
+		// make sure to get rid of all adhesions! 
+		// detach all attached cells 
+		for( int n = 0; n < pCell->state.neighbors.size() ; n++ )
+		{
+			detach_cells( pCell, pCell->state.neighbors[n] ); 
+		}
+		
+		pCell->start_death( apoptosis_index ); 
+		pCell->functions.update_phenotype = NULL; 
+	}
+	
+	return; 
+}
 

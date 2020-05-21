@@ -109,7 +109,7 @@
 		</full_data>
 		
 		<SVG>
-			<interval units="min">1</interval>
+			<interval units="min">2</interval>
 			<enable>true</enable>
 		</SVG>
 		
@@ -395,6 +395,9 @@
 				<motility>  
 				</motility>
 				<secretion>
+					<substrate name="virion">
+						<uptake_rate units="1/min">1</uptake_rate>
+					</substrate> 	
 				</secretion>
 			</phenotype>
 			<custom_data>
@@ -417,11 +420,11 @@
 			<multiplicity_of_infection type="double" units="none" description="multiplicity of infection: virions/cells at t=0">0.01</multiplicity_of_infection>
 			<use_single_infected_cell type="bool" units="none" description="Infect center cell with one virion (overrides MOI)">false</use_single_infected_cell>
 			
-			<number_of_CD8_Tcells type="int" units="none" description="initial number of CD8 T cells">5</number_of_CD8_Tcells>
-			<number_of_macrophages type="int" units="none" description="initial number of macrophages">0</number_of_macrophages>
-			<number_of_neutrophils type="int" units="none" description="initial number of neutrophils">0</number_of_neutrophils>
+			<number_of_CD8_Tcells type="int" units="none" description="initial number of CD8 T cells">50</number_of_CD8_Tcells>
+			<number_of_macrophages type="int" units="none" description="initial number of macrophages">1</number_of_macrophages>
+			<number_of_neutrophils type="int" units="none" description="initial number of neutrophils">1</number_of_neutrophils>
 			<number_of_dead_cells type="int" units="none" description="initial number of apoptotic epithelial cells">0</number_of_dead_cells>
-			<number_of_infected_cells type="int" units="none" description="initial number of infected epithelial cells">1</number_of_infected_cells>
+			<number_of_infected_cells type="int" units="none" description="initial number of infected epithelial cells">100</number_of_infected_cells>
 			<number_of_uninfected_cells type="int" units="none" description="initial number of uninfected epithelial cells">0</number_of_uninfected_cells>
 
 
@@ -429,7 +432,7 @@
 		
 			<lung_epithelium_color type="string" description="">blue</lung_epithelium_color>
 			<CD8_Tcell_color type="string" description="">red</CD8_Tcell_color>
-			<Macrophage_color type="string" description="">orange</Macrophage_color>
+			<Macrophage_color type="string" description="">lime</Macrophage_color>
 			<Neutrophil_color type="string" description="">magenta</Neutrophil_color>
 		
 	</user_parameters>

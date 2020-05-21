@@ -13,9 +13,10 @@ Submodel_Information Neutrophil_submodel_info;
 void CD8_Tcell_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
 {
 	// for 
-	
+/*	
 	if( pCell->state.neighbors.size() > 0 )
 	{ std::cout << "adhered Tcell " << pCell << std::endl; } 
+*/
 	
 	return; 
 }
@@ -511,7 +512,7 @@ void TCell_induced_apoptosis( Cell* pCell, Phenotype& phenotype, double dt )
 	static int apoptosis_index = phenotype.death.find_death_model_index( "apoptosis" ); 
 	if( pCell->custom_data["TCell_contact_time"] > pCell->custom_data["TCell_contact_death_threshold"] )
 	{
-		std::cout << "I die now" << std::endl; 
+		// std::cout << "I die now" << std::endl; 
 		
 		// make sure to get rid of all adhesions! 
 		// detach all attached cells 

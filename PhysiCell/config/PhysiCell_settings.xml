@@ -365,12 +365,22 @@
 			<custom_data>
 			</custom_data>
 		</cell_definition>
-		
-		<cell_definition name="CD8 Tcell" parent_type="default" ID="2">
+
+		<!-- generic immune cell type --> 
+		<cell_definition name="immune" parent_type="default" ID="2">
 			<phenotype>
 				<motility>  
+					<speed units="micron/min">4</speed>
+					<persistence_time units="min">1</persistence_time>
+					<migration_bias units="dimensionless">.5</migration_bias>
 					<options>
-						<enabled>false</enabled>
+						<enabled>true</enabled>
+						<use_2D>true</use_2D>
+						<chemotaxis>
+							<enabled>true</enabled>
+							<substrate>chemokine</substrate>
+							<direction>1</direction>
+						</chemotaxis>
 					</options>
 				</motility>
 				<secretion>
@@ -384,36 +394,33 @@
 			</custom_data>
 		</cell_definition>
 		
-		<cell_definition name="macrophage" parent_type="default" ID="3">
+		<cell_definition name="CD8 Tcell" parent_type="immune" ID="3">
 			<phenotype>
 				<motility>  
-					<options>
-						<enabled>false</enabled>
-					</options>
 				</motility>
 				<secretion>
-					<substrate name="pro-inflammatory cytokine">
-						<secretion_rate units="1/min">10</secretion_rate>
-						<secretion_target units="substrate density">1</secretion_target>
-					</substrate> 	
+				</secretion>
+			</phenotype>
+			<custom_data>
+			</custom_data>
+		</cell_definition>
+		
+		<cell_definition name="macrophage" parent_type="immune" ID="4">
+			<phenotype>
+				<motility>  
+				</motility>
+				<secretion>
 				</secretion>
 			</phenotype>
 			<custom_data>
 			</custom_data>
 		</cell_definition>		
 
-		<cell_definition name="neutrophil" parent_type="default" ID="4">
+		<cell_definition name="neutrophil" parent_type="immune" ID="5">
 			<phenotype>
 				<motility>  
-					<options>
-						<enabled>false</enabled>
-					</options>
 				</motility>
 				<secretion>
-					<substrate name="pro-inflammatory cytokine">
-						<secretion_rate units="1/min">10</secretion_rate>
-						<secretion_target units="substrate density">1</secretion_target>
-					</substrate> 	
 				</secretion>
 			</phenotype>
 			<custom_data>

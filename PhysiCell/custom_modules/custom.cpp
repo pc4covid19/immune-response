@@ -262,7 +262,7 @@ std::vector<std::string> immune_coloring_function( Cell* pCell )
 		output[0] = "black"; 		
 		output[2] = "black"; 		
 		output[3] = "black"; 		
-		return output;
+		return output; 
 	}
 
 	if( pCell->phenotype.death.dead == false && pCell->type == lung_epithelial_type )

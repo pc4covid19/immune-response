@@ -178,11 +178,14 @@ void setup_tissue( void )
 	std::vector<double> position = {0,0,0}; 
 	pC->assign_position( position ); 
 
-	// infected cell 
+	// infected cell, which secretes chemokine 
 	pC = create_cell( get_cell_definition("lung epithelium" ) ); 
 	position = {30,0,0}; 
 	pC->assign_position( position ); 
 	pC->custom_data["assembled_virion"] = 1000.0; 
+	int chemokine_index = microenvironment.find_density_index( "chemokin" ); 
+	pC->phenotype.secretion.secretion_rates[chemokine_index] = 1.0; 
+	pC->phenotype.secretion.saturation_densities[chemokine_index] = 1.0; 
 	
 	// dead infected cell 
 	pC = create_cell( get_cell_definition("lung epithelium" ) ); 

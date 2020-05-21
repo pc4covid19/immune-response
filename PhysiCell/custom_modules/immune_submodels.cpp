@@ -26,7 +26,7 @@ void CD8_Tcell_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
 void CD8_Tcell_mechanics( Cell* pCell, Phenotype& phenotype, double dt )
 {
 	
-	
+	// check for contact with infected cell, and induce apoptosis 
 	
 	return; 
 }
@@ -34,6 +34,7 @@ void CD8_Tcell_mechanics( Cell* pCell, Phenotype& phenotype, double dt )
 void macrophage_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
 {
 	
+	// if too much debris, apoptosis 
 	
 	return; 
 }
@@ -41,6 +42,9 @@ void macrophage_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
 void macrophage_mechanics( Cell* pCell, Phenotype& phenotype, double dt )
 {
 	
+	// check for contact with dead cell
+	
+	// if so, ingest it 
 	
 	return; 
 }

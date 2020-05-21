@@ -183,6 +183,14 @@ void setup_tissue( void )
 	position = {30,0,0}; 
 	pC->assign_position( position ); 
 	pC->custom_data["assembled_virion"] = 1000.0; 
+	
+	// dead infected cell 
+	pC = create_cell( get_cell_definition("lung epithelium" ) ); 
+	position = {0,-50,0}; 
+	pC->assign_position( position ); 
+	pC->custom_data["assembled_virion"] = 1000.0; 
+	int death_index = pC->phenotype.death.find_death_model_index( "apoptosis" ); 
+	pC->start_death( death_index ); 
 
 	// CD8 Tcell 
 	pC = create_cell( get_cell_definition("CD8 Tcell" ) ); 

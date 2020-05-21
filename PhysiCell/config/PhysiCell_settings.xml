@@ -422,7 +422,7 @@
 			
 			<number_of_CD8_Tcells type="int" units="none" description="initial number of CD8 T cells">50</number_of_CD8_Tcells>
 			<number_of_macrophages type="int" units="none" description="initial number of macrophages">1</number_of_macrophages>
-			<number_of_neutrophils type="int" units="none" description="initial number of neutrophils">1</number_of_neutrophils>
+			<number_of_neutrophils type="int" units="none" description="initial number of neutrophils">10</number_of_neutrophils>
 			<number_of_dead_cells type="int" units="none" description="initial number of apoptotic epithelial cells">0</number_of_dead_cells>
 			<number_of_infected_cells type="int" units="none" description="initial number of infected epithelial cells">100</number_of_infected_cells>
 			<number_of_uninfected_cells type="int" units="none" description="initial number of uninfected epithelial cells">0</number_of_uninfected_cells>
@@ -433,7 +433,7 @@
 			<lung_epithelium_color type="string" description="">blue</lung_epithelium_color>
 			<CD8_Tcell_color type="string" description="">red</CD8_Tcell_color>
 			<Macrophage_color type="string" description="">lime</Macrophage_color>
-			<Neutrophil_color type="string" description="">magenta</Neutrophil_color>
+			<Neutrophil_color type="string" description="">cyan</Neutrophil_color>
 		
 	</user_parameters>
 	

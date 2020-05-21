@@ -374,6 +374,10 @@
 					</options>
 				</motility>
 				<secretion>
+					<substrate name="pro-inflammatory cytokine">
+						<secretion_rate units="1/min">10</secretion_rate>
+						<secretion_target units="substrate density">1</secretion_target>
+					</substrate> 	
 				</secretion>
 			</phenotype>
 			<custom_data>
@@ -388,6 +392,10 @@
 					</options>
 				</motility>
 				<secretion>
+					<substrate name="pro-inflammatory cytokine">
+						<secretion_rate units="1/min">10</secretion_rate>
+						<secretion_target units="substrate density">1</secretion_target>
+					</substrate> 	
 				</secretion>
 			</phenotype>
 			<custom_data>
@@ -402,6 +410,10 @@
 					</options>
 				</motility>
 				<secretion>
+					<substrate name="pro-inflammatory cytokine">
+						<secretion_rate units="1/min">10</secretion_rate>
+						<secretion_target units="substrate density">1</secretion_target>
+					</substrate> 	
 				</secretion>
 			</phenotype>
 			<custom_data>

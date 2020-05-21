@@ -87,7 +87,7 @@
 	</domain>
 	
 	<overall>
-		<max_time units="min">7200</max_time> <!-- 5 days * 24 h * 60 min -->
+		<max_time units="min">720</max_time> <!-- 5 days * 24 h * 60 min -->
 		<time_units>min</time_units>
 		<space_units>micron</space_units>
 	
@@ -104,12 +104,12 @@
 		<folder>output</folder> <!-- use . for root --> 
 
 		<full_data>
-			<interval units="min">360</interval>
+			<interval units="min">60</interval>
 			<enable>true</enable>
 		</full_data>
 		
 		<SVG>
-			<interval units="min">60</interval>
+			<interval units="min">2</interval>
 			<enable>true</enable>
 		</SVG>
 		
@@ -119,48 +119,54 @@
 	</save>
 	
 	<microenvironment_setup>
-		<variable name="prey signal" units="mmHg" ID="0">
+		<variable name="virion" units="virion/um^3" ID="0">
 			<physical_parameter_set>
-				<diffusion_coefficient units="micron^2/min">100000.0</diffusion_coefficient>
-				<decay_rate units="1/min">10</decay_rate>  
+				<diffusion_coefficient units="micron^2/min">10.0</diffusion_coefficient>
+				<decay_rate units="1/min">0</decay_rate>  
 			</physical_parameter_set>
-			<initial_condition units="mmHg">0</initial_condition>
-			<Dirichlet_boundary_condition units="mmHg" enabled="true">0</Dirichlet_boundary_condition>
-<!-- use this block to set Dirichlet boundary conditions on individual boundaries --> 
-<!--
-			<Dirichlet_options>
-				<boundary_value ID="xmin" enabled="false">0</boundary_value>
-				<boundary_value ID="xmax" enabled="false">0</boundary_value>
-				<boundary_value ID="ymin" enabled="false">0</boundary_value>
-				<boundary_value ID="ymax" enabled="false">0</boundary_value>
-				<boundary_value ID="zmin" enabled="false">1</boundary_value>
-				<boundary_value ID="zmax" enabled="false">0</boundary_value>
-			</Dirichlet_options>
--->
+			<initial_condition units="virion/um^3">0</initial_condition>
+			<Dirichlet_boundary_condition units="virion/um^3" enabled="false">0</Dirichlet_boundary_condition>
 		</variable>
-		
-		<variable name="predator signal" units="mmHg" ID="0">
+
+		<variable name="assembled virion" units="virion/um^3" ID="1">
 			<physical_parameter_set>
-				<diffusion_coefficient units="micron^2/min">100.0</diffusion_coefficient>
-				<decay_rate units="1/min">.01</decay_rate>  
+				<diffusion_coefficient units="micron^2/min">10.0</diffusion_coefficient>
+				<decay_rate units="1/min">0</decay_rate>  
 			</physical_parameter_set>
-			<initial_condition units="mmHg">0</initial_condition>
-			<Dirichlet_boundary_condition units="mmHg" enabled="true">1</Dirichlet_boundary_condition>
-<!-- use this block to set Dirichlet boundary conditions on individual boundaries --> 
-<!-- Here, we're using it as a "fence" to keep prey inside the simulation domain --> 
-			<Dirichlet_options>
-				<boundary_value ID="xmin" enabled="true">0.5</boundary_value>
-				<boundary_value ID="xmax" enabled="true">0.5</boundary_value>
-				<boundary_value ID="ymin" enabled="true">0.5</boundary_value>
-				<boundary_value ID="ymax" enabled="true">0.5</boundary_value>
-				<boundary_value ID="zmin" enabled="false">1</boundary_value>
-				<boundary_value ID="zmax" enabled="false">1</boundary_value>
-			</Dirichlet_options>
- 		</variable>
+			<initial_condition units="virion/um^3">0</initial_condition>
+			<Dirichlet_boundary_condition units="virion/um^3" enabled="false">0</Dirichlet_boundary_condition>
+		</variable>
+
+		<variable name="interferon 1" units="mol/um^3" ID="2">
+			<physical_parameter_set>
+				<diffusion_coefficient units="micron^2/min">555.56</diffusion_coefficient>
+				<decay_rate units="1/min">1.02e-2</decay_rate>  
+			</physical_parameter_set>
+			<initial_condition units="mol/um^3">0</initial_condition>
+			<Dirichlet_boundary_condition units="mol/um^3" enabled="false">0</Dirichlet_boundary_condition>
+		</variable>
+
+		<variable name="pro-inflammatory cytokine" units="mol/um^3" ID="3">
+			<physical_parameter_set>
+				<diffusion_coefficient units="micron^2/min">555.56</diffusion_coefficient>
+				<decay_rate units="1/min">1.02e-2</decay_rate>  
+			</physical_parameter_set>
+			<initial_condition units="mol/um^3">0</initial_condition>
+			<Dirichlet_boundary_condition units="mol/um^3" enabled="false">0</Dirichlet_boundary_condition>
+		</variable>
+
+		<variable name="chemokine" units="mol/um^3" ID="4">
+			<physical_parameter_set>
+				<diffusion_coefficient units="micron^2/min">555.56</diffusion_coefficient>
+				<decay_rate units="1/min">1.02e-2</decay_rate>  
+			</physical_parameter_set>
+			<initial_condition units="mol/um^3">0</initial_condition>
+			<Dirichlet_boundary_condition units="mol/um^3" enabled="false">0</Dirichlet_boundary_condition>
+		</variable>
 
 		<options>
 			<calculate_gradients>true</calculate_gradients>
-			<track_internalized_substrates_in_each_agent>false</track_internalized_substrates_in_each_agent>
+			<track_internalized_substrates_in_each_agent>true</track_internalized_substrates_in_each_agent>
 			<!-- not yet supported --> 
 			<initial_condition type="matlab" enabled="false">
 				<filename>./config/initial.mat</filename>
@@ -179,7 +185,8 @@
 					<!-- using higher than normal significant digits to match divisions in default code -->
 					<transition_rates units="1/min"> 
 						<!-- G0/G1 to S -->
-						<rate start_index="0" end_index="1" fixed_duration="false">0.00334672</rate>
+						<rate start_index="0" end_index="1" fixed_duration="false">0</rate>
+						<!-- 0.00334672 --> 
 						<!-- S to G2 -->
 						<rate start_index="1" end_index="2" fixed_duration="true">0.00208333</rate>
 						<!-- G2 to M -->
@@ -191,7 +198,7 @@
 				
 				<death>  
 					<model code="100" name="apoptosis"> 
-						<rate units="1/min">5.31667e-05</rate>
+						<rate units="1/min">0</rate> <!-- 5.31667e-05 --> 
 						<transition_rates units="1/min">
 							<rate start_index="0" end_index="1" fixed_duration="true">0.00193798</rate>
 						</transition_rates>
@@ -258,91 +265,139 @@
 						<use_2D>true</use_2D>
 						<chemotaxis>
 							<enabled>false</enabled>
-							<substrate>prey signal</substrate>
+							<substrate>chemokine</substrate>
 							<direction>1</direction>
 						</chemotaxis>
 					</options>
 				</motility>
-				
 				<secretion>
-					<substrate name="prey signal">
-						<secretion_rate units="1/min">0</secretion_rate>
-						<secretion_target units="substrate density">1</secretion_target>
-						<uptake_rate units="1/min">0</uptake_rate>
-						<net_export_rate units="total substrate/min">0</net_export_rate> 
-					</substrate> 
-						
-					<substrate name="predator signal">
-						<secretion_rate units="1/min">0</secretion_rate>
-						<secretion_target units="substrate density">1</secretion_target>
-						<uptake_rate units="1/min">0</uptake_rate>
-						<net_export_rate units="total substrate/min">0</net_export_rate> 
-					</substrate> 	
 				</secretion>
 
 				<molecular />
 			</phenotype>
 			<custom_data>  
-				<relative_sated_volume units="dimensionless">1.5</relative_sated_volume>
+				<!-- for internal viral dynamics --> 
+				<virion units="virions">0</virion>
+				<uncoated_virion units="virions">0</uncoated_virion>
+				<viral_RNA>0</viral_RNA>
+				<viral_protein>0</viral_protein>
+				<assembled_virion>0</assembled_virion>
+				
+				<virion_uncoating_rate type="double" units="1/min" description="rate at which an internalized virion is uncoated">0.01</virion_uncoating_rate>
+				<uncoated_to_RNA_rate type="double" units="1/min" description="rate at which uncoated virion makes its mRNA available">0.01</uncoated_to_RNA_rate> 
+				<protein_synthesis_rate type="double" units="1/min" description="rate at mRNA creates complete set of proteins">0.01</protein_synthesis_rate>
+				<virion_assembly_rate type="double" units="1/min" description="rate at which viral proteins are assembled into complete virion">0.01</virion_assembly_rate>
+ 
+				<!-- virus adsorption and export -->
+				<virion_export_rate type="double" units="1/min" description="rate at which a virion is exported from a live cell">0.01</virion_export_rate> 
+
+				<!-- ACE2 receptor trafficking --> 
+				<unbound_external_ACE2>1000</unbound_external_ACE2>
+				<bound_external_ACE2>0</bound_external_ACE2>
+				<unbound_internal_ACE2>0</unbound_internal_ACE2>
+				<bound_internal_ACE2>0</bound_internal_ACE2>
+	
+				<ACE2_binding_rate type="double" units="1/min" description="ACE2 receptor-virus binding rate">0.001</ACE2_binding_rate> 
+				<ACE2_endocytosis_rate type="double" units="1/min" description="ACE2 receptor-virus endocytosis rate">0.01</ACE2_endocytosis_rate> 
+				<ACE2_cargo_release_rate type="double" units="1/min" description="ACE2 receptor-virus cargo release rate">0.001</ACE2_cargo_release_rate> 
+				<ACE2_recycling_rate type="double" units="1/min" description="ACE2 receptor recycling rate">0.01</ACE2_recycling_rate> 
+				
+				<!-- cell virus response --> 
+				<max_infected_apoptosis_rate type="double" units="1/min" description="maximum rate of cell apoptosis due to viral infection">0.001</max_infected_apoptosis_rate>
+				<max_apoptosis_half_max type="double" units="virion" description="viral load at which cells reach half max apoptosis rate">500</max_apoptosis_half_max>
+				<apoptosis_hill_power type="double" units="none" description="Hill power for viral load apoptosis response">1</apoptosis_hill_power> 
+				<virus_fraction_released_at_death type="double" units="none" description="fraction of internal virus released at cell death">0</virus_fraction_released_at_death>				
+				
+				<!-- for the immune model --> 
+				<TCell_contact_time type="double" units="min">0.0</TCell_contact_time>
+				<cell_attachment_rate units="1/min">0</cell_attachment_rate>
+				<cell_attachment_lifetime units="min">0</cell_attachment_lifetime>
+				
+				<TCell_contact_death_threshold units="min">50</TCell_contact_death_threshold>
+				<max_attachment_distance units="micron">15</max_attachment_distance>
+				<elastic_attachment_coefficient units="1/min">0.01</elastic_attachment_coefficient>
+				<maximum_tolerated_ingested_debris units="micron^3">4000</maximum_tolerated_ingested_debris>
+				
+				<!-- your custom data and parameters go here (for new submodels) --> 
+				
+			
 			</custom_data>
 		</cell_definition>
 		
-		<cell_definition name="prey" parent_type="default" ID="1">
+		<cell_definition name="lung epithelium" parent_type="default" ID="1">
 			<phenotype>
 				<motility>  
-					<speed>0.5</speed>
-					<migration_bias>0.4</migration_bias>
+					<options>
+						<enabled>false</enabled>
+					</options>
+				</motility>
+				<secretion>
+				</secretion>
+			</phenotype>
+			<custom_data>
+			</custom_data>
+		</cell_definition>
+
+		<!-- generic immune cell type --> 
+		<cell_definition name="immune" parent_type="default" ID="2">
+			<phenotype>
+				<motility>  
+					<speed units="micron/min">4</speed>
+					<persistence_time units="min">1</persistence_time>
+					<migration_bias units="dimensionless">0.5</migration_bias>
 					<options>
 						<enabled>true</enabled>
 						<use_2D>true</use_2D>
 						<chemotaxis>
 							<enabled>true</enabled>
-							<substrate>predator signal</substrate>
-							<direction>-1</direction>
+							<substrate>chemokine</substrate>
+							<direction>1</direction>
 						</chemotaxis>
 					</options>
 				</motility>
 				<secretion>
-					<substrate name="prey signal">
+					<substrate name="pro-inflammatory cytokine">
 						<secretion_rate units="1/min">10</secretion_rate>
-					</substrate>
+						<secretion_target units="substrate density">1</secretion_target>
+					</substrate> 	
 				</secretion>
 			</phenotype>
 			<custom_data>
 			</custom_data>
 		</cell_definition>
 		
-		<cell_definition name="predator" parent_type="default" ID="2">
+		<cell_definition name="CD8 Tcell" parent_type="immune" ID="3">
 			<phenotype>
-				<cycle>
-					<transition_rates>
-						<rate start_index="0" end_index="1">0.0</rate>
-					</transition_rates>
-				</cycle>
-				<death>
-					<model code="100" name="apoptosis"> 
-						<rate units="1/min">0</rate>
-					</model>	
-				</death> 
-				<mechanics> 
-					<cell_cell_adhesion_strength units="micron/min">0</cell_cell_adhesion_strength>
-				</mechanics>
 				<motility>  
-					<speed>2</speed>
-					<options>
-						<enabled>true</enabled>
-						<use_2D>true</use_2D>
-						<chemotaxis>
-							<enabled>true</enabled>
-							<substrate>prey signal</substrate>
-							<direction>1</direction>
-						</chemotaxis>
-					</options>
 				</motility>
 				<secretion>
-					<substrate name="predator signal">
-						<secretion_rate units="1/min">10</secretion_rate>
-					</substrate>
+				</secretion>
+			</phenotype>
+			<custom_data>
+				<cell_attachment_rate units="1/min">0.2</cell_attachment_rate>
+				<cell_attachment_lifetime units="min">8.5</cell_attachment_lifetime>
+			</custom_data>
+		</cell_definition>
+		
+		<cell_definition name="macrophage" parent_type="immune" ID="4">
+			<phenotype>
+				<motility>  
+				</motility>
+				<secretion>
+				</secretion>
+			</phenotype>
+			<custom_data>
+			</custom_data>
+		</cell_definition>		
+
+		<cell_definition name="neutrophil" parent_type="immune" ID="5">
+			<phenotype>
+				<motility>  
+				</motility>
+				<secretion>
+					<substrate name="virion">
+						<uptake_rate units="1/min">1</uptake_rate>
+					</substrate> 	
 				</secretion>
 			</phenotype>
 			<custom_data>
@@ -356,24 +411,29 @@
 	<user_parameters>
 		<random_seed type="int" units="dimensionless">0</random_seed> 
 		<!-- example parameters from the template --> 
-		
-		<div_initialization type="divider" description="---Initialization settings---"/>
-		
-		<number_of_prey type="int" units="none" description="initial number of prey">50</number_of_prey>
-		<number_of_predators type="int" units="none" description="initial number of predators">5</number_of_predators> 
-		
-		<div_coloring type="divider" description="---Coloring settings---"/>
 
-		<prey_color type="string" description="color for prey">blue</prey_color>
-		<predator_color type="string" description="color for prey">orange</predator_color>
 		
-		<div_predator type="divider" description="---Predator settings---"/>
-		<predators_eat_prey type="bool" description="set to true if predators can eat prey">true</predators_eat_prey>
-		<predators_cycle_if_big type="bool" description="set to true if predators should cycle if they are well-fed (and thus big)">true</predators_cycle_if_big>
+		<div_ACE2 type="divider" description="--ACE2 receptor model initialization--"/>
+			<ACE2_receptors_per_cell type="double" units="dimensionless" description="number of ACE2 receptors per cell">1000</ACE2_receptors_per_cell>
 		
-		<div_prey type="divider" description="---Prey settings---"/>
-		<prey_quorom_effect type="bool" description="set to true if prey signal down-regulates cycling">true</prey_quorom_effect>
-		<prey_quorom_threshold type="double" description="prey signal > threshold completely arrests cycling">0.2</prey_quorom_threshold>
+		<div_initialization type="divider" description="---Initialization Options--"/>
+			<multiplicity_of_infection type="double" units="none" description="multiplicity of infection: virions/cells at t=0">0.01</multiplicity_of_infection>
+			<use_single_infected_cell type="bool" units="none" description="Infect center cell with one virion (overrides MOI)">false</use_single_infected_cell>
+			
+			<number_of_CD8_Tcells type="int" units="none" description="initial number of CD8 T cells">50</number_of_CD8_Tcells>
+			<number_of_macrophages type="int" units="none" description="initial number of macrophages">1</number_of_macrophages>
+			<number_of_neutrophils type="int" units="none" description="initial number of neutrophils">10</number_of_neutrophils>
+			<number_of_dead_cells type="int" units="none" description="initial number of apoptotic epithelial cells">0</number_of_dead_cells>
+			<number_of_infected_cells type="int" units="none" description="initial number of infected epithelial cells">100</number_of_infected_cells>
+			<number_of_uninfected_cells type="int" units="none" description="initial number of uninfected epithelial cells">0</number_of_uninfected_cells>
+
+
+		<div_colors type="divider" description="---Cell Color Options--"/>
+		
+			<lung_epithelium_color type="string" description="">blue</lung_epithelium_color>
+			<CD8_Tcell_color type="string" description="">red</CD8_Tcell_color>
+			<Macrophage_color type="string" description="">lime</Macrophage_color>
+			<Neutrophil_color type="string" description="">cyan</Neutrophil_color>
 		
 	</user_parameters>
 	

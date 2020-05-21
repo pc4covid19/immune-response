@@ -33,8 +33,13 @@ void CD8_Tcell_mechanics( Cell* pCell, Phenotype& phenotype, double dt )
 
 void macrophage_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
 {
+	static int apoptosis_index = phenotype.death.find_death_model_index( "apoptosis" ); 
+	static Cell_Definition* pCD = find_cell_definition( "macrophage" ); 
 	
-	// if too much debris, apoptosis 
+	// if too much debris, comit to apoptosis 	
+	double ingested_debris = ( phenotype.volume.total - pCD->phenotype.volume.total ); 
+	if( ingested_debris > pCell->custom_data[ "maximum_tolerated_ingested_debris" ] )
+	{ pCell->start_death( apoptosis_index ); }
 	
 	return; 
 }
@@ -43,8 +48,13 @@ void macrophage_mechanics( Cell* pCell, Phenotype& phenotype, double dt )
 {
 	
 	// check for contact with dead cell
+	Cell* pTarget = check_for_dead_neighbor_for_interaction( pCell, dt ); 
 	
-	// if so, ingest it 
+	// if found, eat it
+	if( pTarget )
+	{
+		pCell->ingest_cell( pTarget ); 
+	}
 	
 	return; 
 }
@@ -270,3 +280,118 @@ void immune_submodels_setup( void )
 	pCD->functions.custom_cell_rule = Neutrophil_submodel_info.mechanics_function;	
 	
 }
+
+Cell* check_for_live_neighbor_for_interaction( Cell* pAttacker , double dt )
+{
+	std::vector<Cell*> nearby = pAttacker->cells_in_my_container(); 
+	int i = 0; 
+	while( i < nearby.size() )
+	{
+		// don't try to kill yourself 
+		if( nearby[i] != pAttacker && nearby[i]->phenotype.death.dead == false )
+		{ return nearby[i]; }
+		i++; 
+	}
+	return NULL; 
+}
+
+Cell* check_for_dead_neighbor_for_interaction( Cell* pAttacker , double dt )
+{
+	std::vector<Cell*> nearby = pAttacker->cells_in_my_container(); 
+	int i = 0; 
+	while( i < nearby.size() )
+	{
+		// don't try to kill yourself 
+		if( nearby[i] != pAttacker && nearby[i]->phenotype.death.dead == true )
+		{ return nearby[i]; }
+		i++; 
+	}
+	return NULL; 
+}
+
+void add_elastic_velocity( Cell* pActingOn, Cell* pAttachedTo , double elastic_constant )
+{
+	std::vector<double> displacement = pAttachedTo->position - pActingOn->position; 
+	axpy( &(pActingOn->velocity) , elastic_constant , displacement ); 
+	
+	return; 
+}
+
+void extra_elastic_attachment_mechanics( Cell* pCell, Phenotype& phenotype, double dt )
+{
+	for( int i=0; i < pCell->state.neighbors.size() ; i++ )
+	{
+		add_elastic_velocity( pCell, pCell->state.neighbors[i], pCell->custom_data["elastic_attachment_coefficient"] ); 
+	}
+	return; 
+}	
+
+void attach_cells( Cell* pCell_1, Cell* pCell_2 )
+{
+	#pragma omp critical
+	{
+		bool already_attached = false; 
+		for( int i=0 ; i < pCell_1->state.neighbors.size() ; i++ )
+		{
+			if( pCell_1->state.neighbors[i] == pCell_2 )
+			{ already_attached = true; }
+		}
+		if( already_attached == false )
+		{ pCell_1->state.neighbors.push_back( pCell_2 ); }
+		
+		already_attached = false; 
+		for( int i=0 ; i < pCell_2->state.neighbors.size() ; i++ )
+		{
+			if( pCell_2->state.neighbors[i] == pCell_1 )
+			{ already_attached = true; }
+		}
+		if( already_attached == false )
+		{ pCell_2->state.neighbors.push_back( pCell_1 ); }
+	}
+
+	return; 
+}
+
+void detach_cells( Cell* pCell_1 , Cell* pCell_2 )
+{
+	#pragma omp critical
+	{
+		bool found = false; 
+		int i = 0; 
+		while( !found && i < pCell_1->state.neighbors.size() )
+		{
+			// if cell 2 is in cell 1's list, remove it
+			if( pCell_1->state.neighbors[i] == pCell_2 )
+			{
+				int n = pCell_1->state.neighbors.size(); 
+				// copy last entry to current position 
+				pCell_1->state.neighbors[i] = pCell_1->state.neighbors[n-1]; 
+				// shrink by one 
+				pCell_1->state.neighbors.pop_back(); 
+				found = true; 
+			}
+			i++; 
+		}
+	
+		found = false; 
+		i = 0; 
+		while( !found && i < pCell_2->state.neighbors.size() )
+		{
+			// if cell 1 is in cell 2's list, remove it
+			if( pCell_2->state.neighbors[i] == pCell_1 )
+			{
+				int n = pCell_2->state.neighbors.size(); 
+				// copy last entry to current position 
+				pCell_2->state.neighbors[i] = pCell_2->state.neighbors[n-1]; 
+				// shrink by one 
+				pCell_2->state.neighbors.pop_back(); 
+				found = true; 
+			}
+			i++; 
+		}
+	}
+	
+	return; 
+}
+
+

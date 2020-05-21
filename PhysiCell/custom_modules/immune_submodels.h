@@ -14,6 +14,20 @@ void immune_submodel_setup( void );
 void immune_submodel_model( Cell* pCell, Phenotype& phenotype, double dt );
 */
 
+/* functions for checking nearby cells */
+Cell* check_for_live_neighbor_for_interaction( Cell* pAttacker , double dt );
+Cell* check_for_dead_neighbor_for_interaction( Cell* pAttacker , double dt ); 
+
+/* functions for cell-cell adhesion */ 
+bool attempt_cell_attachment( Cell* pAttacker, Cell* pTarget , double dt );
+
+void add_elastic_velocity( Cell* pActingOn, Cell* pAttachedTo , double elastic_constant );
+void extra_elastic_attachment_mechanics( Cell* pCell, Phenotype& phenotype, double dt );
+void attach_cells( Cell* pCell_1, Cell* pCell_2 );
+void detach_cells( Cell* pCell_1 , Cell* pCell_2 );
+
+
+
 void CD8_Tcell_phenotype( Cell* pCell, Phenotype& phenotype, double dt ); 
 void CD8_Tcell_mechanics( Cell* pCell, Phenotype& phenotype, double dt ); 
 

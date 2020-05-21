@@ -173,56 +173,86 @@ void setup_tissue( void )
 	
 	Cell* pC;
 	
-	// uninfected cell 
-	pC = create_cell( get_cell_definition("lung epithelium" ) ); 
-	std::vector<double> position = {0,0,0}; 
-	pC->assign_position( position ); 
-
-	// infected cell, which secretes chemokine 
-	pC = create_cell( get_cell_definition("lung epithelium" ) ); 
-	position = {30,0,0}; 
-	pC->assign_position( position ); 
-	pC->custom_data["assembled_virion"] = 1000.0; 
-	int chemokine_index = microenvironment.find_density_index( "chemokin" ); 
-	pC->phenotype.secretion.secretion_rates[chemokine_index] = 1.0; 
-	pC->phenotype.secretion.saturation_densities[chemokine_index] = 1.0; 
-	
-	// dead infected cell 
-	pC = create_cell( get_cell_definition("lung epithelium" ) ); 
-	position = {0,-50,0}; 
-	pC->assign_position( position ); 
-	pC->custom_data["assembled_virion"] = 1000.0; 
-	int death_index = pC->phenotype.death.find_death_model_index( "apoptosis" ); 
-	pC->start_death( death_index ); 
-
-	// CD8 Tcell 
-	pC = create_cell( get_cell_definition("CD8 Tcell" ) ); 
-	position = {0, 0.4*Xrange,0}; 
-	pC->assign_position( position ); 
-
-	// macrophage
-	pC = create_cell( get_cell_definition("macrophage" ) ); 
-	position = {0,-0.4*Xrange,0}; 
-	pC->assign_position( position ); 
-
-	// neutrophil
-	pC = create_cell( get_cell_definition("neutrophil" ) ); 
-	position = {-0.4*Xrange,0,0}; 
-	pC->assign_position( position ); 
-	
-	// place prey 
-/*	
-	for( int n = 0 ; n < parameters.ints("number_of_prey") ; n++ )
+	// uninfected cells
+	for( int n = 0 ; n < parameters.ints("number_of_uninfected_cells") ; n++ )
 	{
 		std::vector<double> position = {0,0,0}; 
 		position[0] = Xmin + UniformRandom()*Xrange; 
 		position[1] = Ymin + UniformRandom()*Yrange; 
 		position[2] = Zmin + UniformRandom()*Zrange; 
 		
-		pC = create_cell( get_cell_definition("prey") ); 
+		pC = create_cell( get_cell_definition("lung epithelium" ) ); 
 		pC->assign_position( position );
 	}
-*/	
+
+	// infected cells, which secrete chemokine 
+	int chemokine_index = microenvironment.find_density_index( "chemokine" ); 
+	for( int n = 0 ; n < parameters.ints("number_of_infected_cells") ; n++ )
+	{
+		std::vector<double> position = {0,0,0}; 
+		position[0] = Xmin + UniformRandom()*Xrange; 
+		position[1] = Ymin + UniformRandom()*Yrange; 
+		position[2] = Zmin + UniformRandom()*Zrange; 
+		
+		pC = create_cell( get_cell_definition("lung epithelium" ) ); 
+		pC->assign_position( position );
+		
+		pC->custom_data["assembled_virion"] = 1000.0; 
+		pC->phenotype.secretion.secretion_rates[chemokine_index] = 10.0; 
+		pC->phenotype.secretion.saturation_densities[chemokine_index] = 1.0; 
+	}
+	
+	// dead infected cell 
+	int death_index = pC->phenotype.death.find_death_model_index( "apoptosis" ); 
+	for( int n = 0 ; n < parameters.ints("number_of_infected_cells") ; n++ )
+	{
+		std::vector<double> position = {0,0,0}; 
+		position[0] = Xmin + UniformRandom()*Xrange; 
+		position[1] = Ymin + UniformRandom()*Yrange; 
+		position[2] = Zmin + UniformRandom()*Zrange; 
+		
+		pC = create_cell( get_cell_definition("lung epithelium" ) ); 
+		pC->assign_position( position );
+		
+		pC->custom_data["assembled_virion"] = 1000.0; 
+		pC->start_death( death_index ); 
+	}	
+
+	// CD8 Tcells 
+	for( int n = 0 ; n < parameters.ints("number_of_CD8_Tcells") ; n++ )
+	{
+		std::vector<double> position = {0,0,0}; 
+		position[0] = Xmin + UniformRandom()*Xrange; 
+		position[1] = Ymin + UniformRandom()*Yrange; 
+		position[2] = Zmin + UniformRandom()*Zrange; 
+		
+		pC = create_cell( get_cell_definition("CD8 Tcell" ) ); 
+		pC->assign_position( position );
+	}		
+
+	// macrophages
+	for( int n = 0 ; n < parameters.ints("number_of_CD8_Tcells") ; n++ )
+	{
+		std::vector<double> position = {0,0,0}; 
+		position[0] = Xmin + UniformRandom()*Xrange; 
+		position[1] = Ymin + UniformRandom()*Yrange; 
+		position[2] = Zmin + UniformRandom()*Zrange; 
+		
+		pC = create_cell( get_cell_definition("macrophage" ) ); 
+		pC->assign_position( position );
+	}		
+
+	// neutrophils
+	for( int n = 0 ; n < parameters.ints("number_of_CD8_Tcells") ; n++ )
+	{
+		std::vector<double> position = {0,0,0}; 
+		position[0] = Xmin + UniformRandom()*Xrange; 
+		position[1] = Ymin + UniformRandom()*Yrange; 
+		position[2] = Zmin + UniformRandom()*Zrange; 
+		
+		pC = create_cell( get_cell_definition("neutrophil" ) ); 
+		pC->assign_position( position );
+	}	
 	
 	return; 
 }

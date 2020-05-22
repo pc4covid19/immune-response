@@ -211,14 +211,14 @@ int main( int argc, char* argv[] )
 				total_cytokine += microenvironment(n)[proinflammatory_cytokine_index];
 			}
 			
-			if( total_cytokine > 700 && total_cytokine < 1100)
+			if( total_cytokine > 700 && total_cytokine < 800)
 			{
 				if( UniformRandom()<0.5 )
 				{create_infiltrating_neutrophil();}
 			}
-			else if( total_cytokine > 1250 && total_cytokine< 1400)
+			else if( total_cytokine > 1350 && total_cytokine< 1450)
 			{
-				if( UniformRandom()<0.5 )
+				if( UniformRandom()<0.3 )
 				{create_infiltrating_Tcell();}
 			}
 			////////////////////////////////////

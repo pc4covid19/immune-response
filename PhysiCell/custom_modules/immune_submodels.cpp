@@ -141,6 +141,9 @@ void macrophage_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
 //			std::cout << "\t\t\t" << pCell  << " eats " << pTestCell << std::endl; 
 			pCell->ingest_cell( pTestCell ); 
 			
+			static int proinflammatory_cytokine_index = microenvironment.find_density_index( "pro-inflammatory cytokine");
+			pCell->phenotype.secretion.secretion_rates[] = 10;
+			
 //			system("pause");
 			return; 
 		}

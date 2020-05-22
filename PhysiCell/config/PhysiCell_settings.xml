@@ -372,6 +372,10 @@
 				</motility>
 				<secretion>
 				</secretion>
+				<volume>
+					<total units="micron^3">478</total>
+					<nuclear units="micron^3">95</nuclear>
+				</volume>
 			</phenotype>
 			<custom_data>
 				<cell_attachment_rate units="1/min">0.2</cell_attachment_rate>
@@ -382,12 +386,18 @@
 		<cell_definition name="macrophage" parent_type="immune" ID="4">
 			<phenotype>
 				<motility>  
+					<migration_bias>0.1</migration_bias>
+					<persistence_time>5</persistence_time>
 					<chemotaxis>
-						<substrate>pro-inflammatory cytokine</substrate>
+						<substrate>chemokine</substrate>
 					</chemotaxis>
 				</motility>
 				<secretion>
 				</secretion>
+				<volume>
+					<total units="micron^3">4849</total>
+					<nuclear units="micron^3">485</nuclear>
+				</volume>
 			</phenotype>
 			<custom_data>
 			</custom_data>
@@ -402,6 +412,10 @@
 						<uptake_rate units="1/min">1</uptake_rate>
 					</substrate> 	
 				</secretion>
+				<volume>
+					<total units="micron^3">1437</total>
+					<nuclear units="micron^3">718.5</nuclear>
+				</volume>
 			</phenotype>
 			<custom_data>
 			</custom_data>
@@ -424,11 +438,11 @@
 			<use_single_infected_cell type="bool" units="none" description="Infect center cell with one virion (overrides MOI)">false</use_single_infected_cell>
 			
 			<number_of_CD8_Tcells type="int" units="none" description="initial number of CD8 T cells">50</number_of_CD8_Tcells>
-			<number_of_macrophages type="int" units="none" description="initial number of macrophages">10</number_of_macrophages>
+			<number_of_macrophages type="int" units="none" description="initial number of macrophages">50</number_of_macrophages>
 			<number_of_neutrophils type="int" units="none" description="initial number of neutrophils">10</number_of_neutrophils>
-			<number_of_dead_cells type="int" units="none" description="initial number of apoptotic epithelial cells">0</number_of_dead_cells>
-			<number_of_infected_cells type="int" units="none" description="initial number of infected epithelial cells">100</number_of_infected_cells>
-			<number_of_uninfected_cells type="int" units="none" description="initial number of uninfected epithelial cells">0</number_of_uninfected_cells>
+			<number_of_dead_cells type="int" units="none" description="initial number of apoptotic epithelial cells">10</number_of_dead_cells>
+			<number_of_infected_cells type="int" units="none" description="initial number of infected epithelial cells">150</number_of_infected_cells>
+			<number_of_uninfected_cells type="int" units="none" description="initial number of uninfected epithelial cells">50</number_of_uninfected_cells>
 
 
 		<div_colors type="divider" description="---Cell Color Options--"/>

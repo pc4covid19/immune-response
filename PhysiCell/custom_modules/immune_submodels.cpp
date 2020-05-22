@@ -93,102 +93,84 @@ void CD8_Tcell_mechanics( Cell* pCell, Phenotype& phenotype, double dt )
 
 void macrophage_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
 {
+//	std::cout << __FUNCTION__ << " " << __LINE__ << std::endl; 
 	static int apoptosis_index = phenotype.death.find_death_model_index( "apoptosis" ); 
 	static Cell_Definition* pCD = find_cell_definition( "macrophage" ); 
 	
 	// make changes to volume change rate??
-	
+
 	// if too much debris, comit to apoptosis 	
+	
+//	std::cout << __FUNCTION__ << " " << __LINE__ << std::endl; 
+
 	double ingested_debris = ( phenotype.volume.total - pCD->phenotype.volume.total ); 
 	if( ingested_debris > pCell->custom_data[ "maximum_tolerated_ingested_debris" ] )
-	{ pCell->start_death( apoptosis_index ); }
+	{
+		pCell->start_death( apoptosis_index ); 
+//		std::cout << " I ate to much and must therefore die " << std::endl; 
+//		system("pause"); 
+	}
+
+//	std::cout << __FUNCTION__ << " " << __LINE__ << std::endl; 
+
+	// check for cells to eat 
+	std::vector<Cell*> neighbors = pCell->cells_in_my_container(); 
+
+//	std::cout << __FUNCTION__ << " " << __LINE__ << std::endl; 
+	
+	// at least one of the cells is pCell 
+	if( neighbors.size() < 2 )
+	{ return; } 
+	
+//	std::cout << "\t\t" << __FUNCTION__ << " " << __LINE__ << std::endl; 
+
+	int n = 0; 
+	Cell* pTestCell = neighbors[n]; 
+//	std::cout << pCell << " vs " ; 
+	while( n < neighbors.size() )
+	{
+		pTestCell = neighbors[n]; 
+//		std::cout << pTestCell << " "; 
+		// if it is not me and not a macrophage 
+		if( pTestCell != pCell && pTestCell->phenotype.death.dead == true && 
+			pTestCell->phenotype.flagged_for_removal == false )
+		{
+//			std::cout << std::endl; 
+//			std::cout << "\t\tnom nom nom" << std::endl; 
+//			std::cout << "\t\t\t" << pCell->type << " eats " << pTestCell->type << std::endl; 
+//			std::cout << "\t\t\t" << pCell  << " eats " << pTestCell << std::endl; 
+			pCell->ingest_cell( pTestCell ); 
+			
+//			system("pause");
+			return; 
+		}
+//		else
+//		{
+//			std::cout << " (" << (int) pTestCell->phenotype.death.dead << " " << 
+//			(int) pTestCell->phenotype.flagged_for_removal << ") " ; 
+//		}
+		
+		n++; 
+	}
+//	std::cout << " " << std::endl; 
 	
 	return; 
 }
 
 void macrophage_mechanics( Cell* pCell, Phenotype& phenotype, double dt )
 {
-	std::vector<Cell*> neighbors = pCell->cells_in_my_container(); 
-	
-	if( neighbors.size() == 0 )
-	{ return; } 
-	
-	int n = 0; 
-	Cell* pTestCell = neighbors[n]; 
-	while( n < neighbors.size() )
-	{
-		pTestCell = neighbors[n]; 
-		// if it is not me and not a macrophage 
-		if( pTestCell != pCell && pTestCell->phenotype.death.dead == true && 
-			pTestCell->phenotype.flagged_for_removal == false )
-		{
-/*
-			// calculate distance to the cell 
-			std::vector<double> displacement = pTestCell->position;
-			displacement -= pCell->position;
-			double distance = norm( displacement ); 
-			
-			double max_distance = pCell->phenotype.geometry.radius + 
-				pTestCell->phenotype.geometry.radius; 
-			max_distance *= 1.1; 
-			
-			// if it is not a macrophage, test for viral load 
-			// if high viral load, eat it. 
-*/			
-		
-//			if( pTestCell->phenotype.molecular.internalized_total_substrates[nVirus] 
-//				> parameters.doubles("min_virion_detection_threshold") &&
-//				distance < max_distance )
-			{
-				std::cout << "\t\tnom nom nom" << std::endl; 
-				std::cout << "\t\t\t" << pCell->type << " eats " << pTestCell->type << std::endl; 
-				std::cout << "\t\t\t" << pCell  << " eats " << pTestCell << std::endl; 
-				pCell->ingest_cell( pTestCell ); 
-				return; 
-			}
-			
-		}
-		n++; 
-	}
-	
-	
-	
-	return; 
-	
-/*	
-	// check for contact with dead cell
-	Cell* pTarget = check_for_dead_neighbor_for_interaction( pCell, dt ); 
-	if( !pTarget )
-	{ return; } 
-		
-	// pragma omp critical ??
-	// if found, eat it
-//	#pragma omp critical
-	{
-		if( pTarget )
-		{
-			pCell->ingest_cell( pTarget ); 
-		}
-	}
-*/
-	
 	return; 
 }
 
 void neutrophil_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
 {
-	
-	
 	return; 
 }
 
 void neutrophil_mechanics( Cell* pCell, Phenotype& phenotype, double dt )
 {
-	
-	
 	return; 
 }
-
 
 /*
 void immune_submodel_setup( void )

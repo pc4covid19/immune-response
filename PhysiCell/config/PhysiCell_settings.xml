@@ -124,7 +124,7 @@
 				<diffusion_coefficient units="micron^2/min">10.0</diffusion_coefficient>
 				<decay_rate units="1/min">0</decay_rate>  
 			</physical_parameter_set>
-			<initial_condition units="virion/um^3">0</initial_condition>
+			<initial_condition units="virion/um^3">10</initial_condition>
 			<Dirichlet_boundary_condition units="virion/um^3" enabled="false">0</Dirichlet_boundary_condition>
 		</variable>
 
@@ -440,8 +440,8 @@
 			<number_of_CD8_Tcells type="int" units="none" description="initial number of CD8 T cells">0</number_of_CD8_Tcells>
 			<number_of_macrophages type="int" units="none" description="initial number of macrophages">50</number_of_macrophages>
 			<number_of_neutrophils type="int" units="none" description="initial number of neutrophils">0</number_of_neutrophils>
-			<number_of_dead_cells type="int" units="none" description="initial number of apoptotic epithelial cells">250</number_of_dead_cells>
-			<number_of_infected_cells type="int" units="none" description="initial number of infected epithelial cells">150</number_of_infected_cells>
+			<number_of_dead_cells type="int" units="none" description="initial number of apoptotic epithelial cells">2550</number_of_dead_cells>
+			<number_of_infected_cells type="int" units="none" description="initial number of infected epithelial cells">250</number_of_infected_cells>
 			<number_of_uninfected_cells type="int" units="none" description="initial number of uninfected epithelial cells">50</number_of_uninfected_cells>
 
 

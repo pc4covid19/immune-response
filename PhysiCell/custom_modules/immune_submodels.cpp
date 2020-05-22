@@ -142,7 +142,7 @@ void macrophage_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
 			pCell->ingest_cell( pTestCell ); 
 			
 			static int proinflammatory_cytokine_index = microenvironment.find_density_index( "pro-inflammatory cytokine");
-			pCell->phenotype.secretion.secretion_rates[] = 10;
+			pCell->phenotype.secretion.secretion_rates[proinflammatory_cytokine_index] = 10;
 			
 //			system("pause");
 			return; 

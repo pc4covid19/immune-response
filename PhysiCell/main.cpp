@@ -202,7 +202,29 @@ int main( int argc, char* argv[] )
 			// update the microenvironment
 			microenvironment.simulate_diffusion_decay( diffusion_dt );
 			
-			// run PhysiCell 
+			///////////////////////////////////// Recruitment of neutrophils and T cells by pro-inflammaotry cytokine - Adrianne //////////////////////
+			static int proinflammatory_cytokine_index = microenvironment.find_density_index("pro-inflammatory cytokine");
+			double total_cytokine = 0;
+			
+			for( int n=0; n<microenvironment.mesh.voxels.size(); n++ )
+			{
+				total_cytokine += microenvironment(n)[proinflammatory_cytokine_index];
+			}
+			
+			if( total_cytokine > 700 && total_cytokine < 1100)
+			{
+				if( UniformRandom()<0.5 )
+				{create_infiltrating_neutrophil();}
+			}
+			else if( total_cytokine > 1250 && total_cytokine< 1400)
+			{
+				if( UniformRandom()<0.5 )
+				{create_infiltrating_Tcell();}
+			}
+			////////////////////////////////////
+			
+			
+			// run PhysiCell 			
 			((Cell_Container *)microenvironment.agent_container)->update_all_cells( PhysiCell_globals.current_time );
 			
 			/*

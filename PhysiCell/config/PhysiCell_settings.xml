@@ -87,7 +87,7 @@
 	</domain>
 	
 	<overall>
-		<max_time units="min">720</max_time> <!-- 5 days * 24 h * 60 min -->
+		<max_time units="min">300</max_time> <!-- 5 days * 24 h * 60 min -->
 		<time_units>min</time_units>
 		<space_units>micron</space_units>
 	
@@ -104,7 +104,7 @@
 		<folder>output</folder> <!-- use . for root --> 
 
 		<full_data>
-			<interval units="min">60</interval>
+			<interval units="min">4</interval>
 			<enable>true</enable>
 		</full_data>
 		
@@ -124,7 +124,7 @@
 				<diffusion_coefficient units="micron^2/min">10.0</diffusion_coefficient>
 				<decay_rate units="1/min">0</decay_rate>  
 			</physical_parameter_set>
-			<initial_condition units="virion/um^3">0</initial_condition>
+			<initial_condition units="virion/um^3">10</initial_condition>
 			<Dirichlet_boundary_condition units="virion/um^3" enabled="false">0</Dirichlet_boundary_condition>
 		</variable>
 
@@ -357,7 +357,7 @@
 				</motility>
 				<secretion>
 					<substrate name="pro-inflammatory cytokine">
-						<secretion_rate units="1/min">10</secretion_rate>
+						<secretion_rate units="1/min">0</secretion_rate>
 						<secretion_target units="substrate density">1</secretion_target>
 					</substrate> 	
 				</secretion>
@@ -372,6 +372,10 @@
 				</motility>
 				<secretion>
 				</secretion>
+				<volume>
+					<total units="micron^3">478</total>
+					<nuclear units="micron^3">95</nuclear>
+				</volume>
 			</phenotype>
 			<custom_data>
 				<cell_attachment_rate units="1/min">0.2</cell_attachment_rate>
@@ -390,6 +394,10 @@
 				</motility>
 				<secretion>
 				</secretion>
+				<volume>
+					<total units="micron^3">4849</total>
+					<nuclear units="micron^3">485</nuclear>
+				</volume>
 			</phenotype>
 			<custom_data>
 			</custom_data>
@@ -398,12 +406,21 @@
 		<cell_definition name="neutrophil" parent_type="immune" ID="5">
 			<phenotype>
 				<motility>  
+					<migration_bias>0.1</migration_bias>
+					<persistence_time>5</persistence_time>
+					<chemotaxis>
+						<substrate>virion</substrate>
+					</chemotaxis>
 				</motility>
 				<secretion>
 					<substrate name="virion">
 						<uptake_rate units="1/min">1</uptake_rate>
 					</substrate> 	
 				</secretion>
+				<volume>
+					<total units="micron^3">1437</total>
+					<nuclear units="micron^3">718.5</nuclear>
+				</volume>
 			</phenotype>
 			<custom_data>
 			</custom_data>
@@ -425,13 +442,12 @@
 			<multiplicity_of_infection type="double" units="none" description="multiplicity of infection: virions/cells at t=0">0.01</multiplicity_of_infection>
 			<use_single_infected_cell type="bool" units="none" description="Infect center cell with one virion (overrides MOI)">false</use_single_infected_cell>
 			
-			<number_of_CD8_Tcells type="int" units="none" description="initial number of CD8 T cells">50</number_of_CD8_Tcells>
+			<number_of_CD8_Tcells type="int" units="none" description="initial number of CD8 T cells">0</number_of_CD8_Tcells>
 			<number_of_macrophages type="int" units="none" description="initial number of macrophages">50</number_of_macrophages>
-			<number_of_neutrophils type="int" units="none" description="initial number of neutrophils">10</number_of_neutrophils>
-			<number_of_dead_cells type="int" units="none" description="initial number of apoptotic epithelial cells">10</number_of_dead_cells>
-			<number_of_infected_cells type="int" units="none" description="initial number of infected epithelial cells">150</number_of_infected_cells>
+			<number_of_neutrophils type="int" units="none" description="initial number of neutrophils">0</number_of_neutrophils>
+			<number_of_dead_cells type="int" units="none" description="initial number of apoptotic epithelial cells">250</number_of_dead_cells>
+			<number_of_infected_cells type="int" units="none" description="initial number of infected epithelial cells">250</number_of_infected_cells>
 			<number_of_uninfected_cells type="int" units="none" description="initial number of uninfected epithelial cells">50</number_of_uninfected_cells>
-
 
 		<div_colors type="divider" description="---Cell Color Options--"/>
 		

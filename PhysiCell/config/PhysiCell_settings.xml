@@ -449,7 +449,6 @@
 			<number_of_infected_cells type="int" units="none" description="initial number of infected epithelial cells">250</number_of_infected_cells>
 			<number_of_uninfected_cells type="int" units="none" description="initial number of uninfected epithelial cells">50</number_of_uninfected_cells>
 
-
 		<div_colors type="divider" description="---Cell Color Options--"/>
 		
 			<lung_epithelium_color type="string" description="">blue</lung_epithelium_color>

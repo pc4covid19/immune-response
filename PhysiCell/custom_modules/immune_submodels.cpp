@@ -236,6 +236,9 @@ void macrophage_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
 			
 			static int proinflammatory_cytokine_index = microenvironment.find_density_index( "pro-inflammatory cytokine");
 			pCell->phenotype.secretion.secretion_rates[proinflammatory_cytokine_index] = 10;
+      
+      // Paul M says: This should be read from a parameter value instead of hard-coded. 
+
 			
 //			system("pause");
 			return; 

@@ -307,14 +307,15 @@ std::vector<std::string> immune_coloring_function( Cell* pCell )
 	{
 		if( pCell->type != lung_epithelial_type )
 		{
-			output[0] = "brown"; 		
-			output[2] = "brown"; 		
-			output[3] = "brown"; 	
+			output[0] = parameters.strings("apoptotic_immune_color");		
+			output[2] = output[0]; 		
+			output[3] = output[0]; 	
 			return output; 
 		}
-		output[0] = "black"; 		
-		output[2] = "black"; 		
-		output[3] = "black"; 		
+
+		output[0] = parameters.strings("apoptotic_epithelium_color");	
+		output[2] = output[0]; 		
+		output[3] = output[0]; 		
 		return output; 
 	}
 

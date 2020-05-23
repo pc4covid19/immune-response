@@ -437,6 +437,17 @@
 		
 		<div_ACE2 type="divider" description="--ACE2 receptor model initialization--"/>
 			<ACE2_receptors_per_cell type="double" units="dimensionless" description="number of ACE2 receptors per cell">1000</ACE2_receptors_per_cell>
+			
+		<div_immune type="divider" description="--Immune activation parameters--"/>
+			<immune_dt type="double" units="min" description="how often we check to introduce immune cells">10</immune_dt> 
+			
+			<neutrophil_max_recruitment_rate type="double" units="cells/min/micron^3">0.00000005</neutrophil_max_recruitment_rate>
+			<neutrophil_recruitment_min_signal type="double" units="substrate/micron^3">0.5</neutrophil_recruitment_min_signal>
+			<neutrophil_recruitment_saturation_signal type="double" units="substrate/micron^3">0.8</neutrophil_recruitment_saturation_signal>
+			
+			<CD8_Tcell_max_recruitment_rate type="double" units="cells/min/micron^3">0.000005</CD8_Tcell_max_recruitment_rate>
+			<CD8_Tcell_recruitment_min_signal type="double" units="substrate/micron^3">0.8</CD8_Tcell_recruitment_min_signal>
+			<CD8_Tcell_recruitment_saturation_signal type="double" units="substrate/micron^3">1</CD8_Tcell_recruitment_saturation_signal>
 		
 		<div_initialization type="divider" description="---Initialization Options--"/>
 			<multiplicity_of_infection type="double" units="none" description="multiplicity of infection: virions/cells at t=0">0.01</multiplicity_of_infection>

@@ -904,3 +904,24 @@ void immune_cell_recruitment( double dt )
 	////////////////////////////////////
 */	
 }
+
+void initial_immune_cell_placement( void )
+{
+	Cell_Definition* pCD8 = find_cell_definition( "CD8 Tcell" ); 
+	Cell_Definition* pMF = find_cell_definition( "macrophage" ); 
+	Cell_Definition* pN = find_cell_definition( "neutrophil" ); 
+
+	// CD8+ T cells; 
+	for( int n = 0 ; n < parameters.ints("number_of_CD8_Tcells") ; n++ )
+	{ create_infiltrating_immune_cell( pCD8 ); }		
+
+	// macrophages 
+	for( int n = 0 ; n < parameters.ints("number_of_macrophages") ; n++ )
+	{ create_infiltrating_immune_cell( pMF ); }		
+
+	// neutrophils 
+	for( int n = 0 ; n < parameters.ints("number_of_neutrophils") ; n++ )
+	{ create_infiltrating_immune_cell( pN ); }		
+
+	return;
+}

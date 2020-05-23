@@ -52,7 +52,7 @@ void create_infiltrating_neutrophil( void );
 
 void immune_cell_recruitment( double dt ); 
 
-
+void initial_immune_cell_placement( void ); 
 
 void immune_submodels_setup( void ); 
 

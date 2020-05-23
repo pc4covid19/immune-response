@@ -10,11 +10,69 @@ Submodel_Information CD8_submodel_info;
 Submodel_Information Macrophage_submodel_info; 
 Submodel_Information Neutrophil_submodel_info; 
 
+void create_infiltrating_immune_cell( Cell_Definition* pCD )
+{
+	static double Xmin = microenvironment.mesh.bounding_box[0]; 
+	static double Ymin = microenvironment.mesh.bounding_box[1]; 
+	static double Zmin = microenvironment.mesh.bounding_box[2]; 
+
+	static double Xmax = microenvironment.mesh.bounding_box[3]; 
+	static double Ymax = microenvironment.mesh.bounding_box[4]; 
+	static double Zmax = microenvironment.mesh.bounding_box[5]; 
+	
+	static bool setup_done = false; 
+	
+	if( default_microenvironment_options.simulate_2D == true && setup_done == false )
+	{
+		Zmin = 0.0; 
+		Zmax = 0.0; 
+	}
+	
+	static double Xrange = (Xmax - Xmin); 
+	static double Yrange = (Ymax - Ymin); 
+	static double Zrange = (Zmax - Zmin); 
+	
+	// keep cells away from the outer edge 
+	
+	if( setup_done == false )
+	{
+		Xmin += 0.1*Xrange; 
+		Ymin += 0.1*Yrange; 
+		Zmin = 0;
+		
+		Xrange *= 0.8;
+		Yrange *= 0.8;
+		Zrange = 0.0; 
+		setup_done = true; 
+	}
+	
+	std::vector<double> position = {0,0,0}; 
+	position[0] = Xmin + UniformRandom()*Xrange; 
+	position[1] = Ymin + UniformRandom()*Yrange; 
+	//position[2] = Zmin + UniformRandom()*Zrange; 
+		
+	Cell* pC = create_cell( *pCD ); 
+	pC->assign_position( position );
+	
+	return; 
+}
+
+void create_infiltrating_immune_cell( std::string cell_name )
+{
+	create_infiltrating_immune_cell( find_cell_definition( cell_name ) ); 
+	return;
+}
+
 void create_infiltrating_neutrophil(void)
 {
-	double Xmin = microenvironment.mesh.bounding_box[0]; 
-	double Ymin = microenvironment.mesh.bounding_box[1]; 
-	double Zmin = microenvironment.mesh.bounding_box[2]; 
+	static Cell_Definition* pCD = find_cell_definition( "neutrophil" );
+	create_infiltrating_immune_cell( pCD ); 
+	
+	return; 
+	
+	static double Xmin = microenvironment.mesh.bounding_box[0]; 
+	static double Ymin = microenvironment.mesh.bounding_box[1]; 
+	static double Zmin = microenvironment.mesh.bounding_box[2]; 
 
 	double Xmax = microenvironment.mesh.bounding_box[3]; 
 	double Ymax = microenvironment.mesh.bounding_box[4]; 
@@ -53,11 +111,14 @@ void create_infiltrating_neutrophil(void)
 	pC->assign_position( position );
 	
 	return;
-	
 }
 
 void create_infiltrating_Tcell(void)
 {
+	static Cell_Definition* pCD = find_cell_definition( "CD8 Tcell" );
+	create_infiltrating_immune_cell( pCD ); 
+
+	return; 
 	static double Xmin = microenvironment.mesh.bounding_box[0]; 
 	static double Ymin = microenvironment.mesh.bounding_box[1]; 
 	static double Zmin = microenvironment.mesh.bounding_box[2]; 
@@ -105,8 +166,6 @@ void create_infiltrating_Tcell(void)
 	pC->assign_position( position );
 	
 	return;
-
-	
 }
 
 void CD8_Tcell_phenotype( Cell* pCell, Phenotype& phenotype, double dt )

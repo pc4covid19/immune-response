@@ -44,6 +44,9 @@ void TCell_induced_apoptosis( Cell* pCell, Phenotype& phenotype, double dt );
 
 // immune cell recruitment 
 
+void create_infiltrating_immune_cell( Cell_Definition* pCD );
+void create_infiltrating_immune_cell( std::string cell_name );
+
 void create_infiltrating_Tcell( void ); 
 void create_infiltrating_neutrophil( void );
 

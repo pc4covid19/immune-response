@@ -74,10 +74,10 @@
 
 <PhysiCell_settings version="devel-version">
 	<domain>
-		<x_min>-500</x_min>
-		<x_max>500</x_max>
-		<y_min>-500</y_min>
-		<y_max>500</y_max>
+		<x_min>-400</x_min>
+		<x_max>400</x_max>
+		<y_min>-400</y_min>
+		<y_max>400</y_max>
 		<z_min>-10</z_min>
 		<z_max>10</z_max>
 		<dx>20</dx>
@@ -97,7 +97,7 @@
 	</overall>
 	
 	<parallel>
-		<omp_num_threads>6</omp_num_threads>
+		<omp_num_threads>4</omp_num_threads>
 	</parallel> 
 	
 	<save>
@@ -318,6 +318,8 @@
 				<elastic_attachment_coefficient units="1/min">0.01</elastic_attachment_coefficient>
 				<maximum_tolerated_ingested_debris units="micron^3">3000</maximum_tolerated_ingested_debris>
 				
+				<activated_macrophage_speed units="micron/min" type="double">0.4</activated_macrophage_speed>
+				<activated_macrophage_secretion_rate units="1/min" type="double">10</activated_macrophage_secretion_rate>
 				<!-- your custom data and parameters go here (for new submodels) --> 
 				
 			
@@ -341,6 +343,11 @@
 		<!-- generic immune cell type --> 
 		<cell_definition name="immune" parent_type="default" ID="2">
 			<phenotype>
+				<death>
+					<model code="100" name="apoptosis"> 
+						<rate units="1/min">5e-4</rate> <!-- 5.31667e-05 --> 
+					</model> 
+				</death>
 				<motility>  
 					<speed units="micron/min">4</speed>
 					<persistence_time units="min">1</persistence_time>
@@ -437,6 +444,17 @@
 		
 		<div_ACE2 type="divider" description="--ACE2 receptor model initialization--"/>
 			<ACE2_receptors_per_cell type="double" units="dimensionless" description="number of ACE2 receptors per cell">1000</ACE2_receptors_per_cell>
+			
+		<div_immune type="divider" description="--Immune activation parameters--"/>
+			<immune_dt type="double" units="min" description="how often we check to introduce immune cells">10</immune_dt> 
+			
+			<neutrophil_max_recruitment_rate type="double" units="cells/min/micron^3">0.00000005</neutrophil_max_recruitment_rate>
+			<neutrophil_recruitment_min_signal type="double" units="substrate/micron^3">0.5</neutrophil_recruitment_min_signal>
+			<neutrophil_recruitment_saturation_signal type="double" units="substrate/micron^3">0.8</neutrophil_recruitment_saturation_signal>
+			
+			<CD8_Tcell_max_recruitment_rate type="double" units="cells/min/micron^3">0.000005</CD8_Tcell_max_recruitment_rate>
+			<CD8_Tcell_recruitment_min_signal type="double" units="substrate/micron^3">0.8</CD8_Tcell_recruitment_min_signal>
+			<CD8_Tcell_recruitment_saturation_signal type="double" units="substrate/micron^3">1</CD8_Tcell_recruitment_saturation_signal>
 		
 		<div_initialization type="divider" description="---Initialization Options--"/>
 			<multiplicity_of_infection type="double" units="none" description="multiplicity of infection: virions/cells at t=0">0.01</multiplicity_of_infection>

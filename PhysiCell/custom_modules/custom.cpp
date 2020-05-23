@@ -234,41 +234,7 @@ void setup_tissue( void )
 		pC->start_death( death_index ); 		
 	}	
 
-	// CD8 Tcells 
-	for( int n = 0 ; n < parameters.ints("number_of_CD8_Tcells") ; n++ )
-	{
-		std::vector<double> position = {0,0,0}; 
-		position[0] = Xmin + UniformRandom()*Xrange; 
-		position[1] = Ymin + UniformRandom()*Yrange; 
-		//position[2] = Zmin + UniformRandom()*Zrange; 
-		
-		pC = create_cell( get_cell_definition("CD8 Tcell" ) ); 
-		pC->assign_position( position );
-	}		
-
-	// macrophages
-	for( int n = 0 ; n < parameters.ints("number_of_macrophages") ; n++ )
-	{
-		std::vector<double> position = {0,0,0}; 
-		position[0] = Xmin + UniformRandom()*Xrange; 
-		position[1] = Ymin + UniformRandom()*Yrange; 
-		//position[2] = Zmin + UniformRandom()*Zrange; 
-		
-		pC = create_cell( get_cell_definition("macrophage" ) ); 
-		pC->assign_position( position );
-	}		
-
-	// neutrophils
-	for( int n = 0 ; n < parameters.ints("number_of_neutrophils") ; n++ )
-	{
-		std::vector<double> position = {0,0,0}; 
-		position[0] = Xmin + UniformRandom()*Xrange; 
-		position[1] = Ymin + UniformRandom()*Yrange; 
-		//position[2] = Zmin + UniformRandom()*Zrange; 
-		
-		pC = create_cell( get_cell_definition("neutrophil" ) ); 
-		pC->assign_position( position );
-	}	
+	initial_immune_cell_placement(); 
 	
 	return; 
 }

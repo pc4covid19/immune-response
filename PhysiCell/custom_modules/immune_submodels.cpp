@@ -247,7 +247,7 @@ void macrophage_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
       
       // Paul M says: This should be read from a parameter value instead of hard-coded. 
 
-			phenotype.motility.speed = 
+			phenotype.motility.migration_speed = 
 				pCell->custom_data[ "activated_macrophage_speed" ]; 
 			
 //			system("pause");

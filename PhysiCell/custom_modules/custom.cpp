@@ -71,6 +71,8 @@
 
 Cell_Definition motile_cell; 
 
+std::vector<int> vascularized_voxel_indicies;
+
 void create_cell_types( void )
 {
 	// set the random seed 
@@ -237,6 +239,21 @@ void setup_tissue( void )
 	initial_immune_cell_placement(); 
 	
 	return; 
+}
+void choose_initialized_voxels( void )
+{
+	// read in percentage of tissue that's vascularised
+	double percentage_vascularised = parameters.doubles("perecentage_tissue_vascularized");
+	int max_voxel_index = microenvironment.mesh.voxels.size() - 1; 
+	int number_of_vascularized_voxels = (int) ( percentage_vascularised/100 * ( max_voxel_index+1) ); 
+ 
+	 // choose which voxels are veins
+	 for( int n = 0 ; n < number_of_vascularized_voxels ; n++ )
+	 {
+		int index_vascularised_voxel = (int) ( UniformRandom() * max_voxel_index ); 
+		vascularized_voxel_indicies.push_back( index_vascularised_voxel ); 
+	 }
+	 return;
 }
 
 std::string blue_yellow_interpolation( double min, double val, double max )

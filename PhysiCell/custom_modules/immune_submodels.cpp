@@ -3,7 +3,6 @@
 using namespace PhysiCell; 
 
 std::string immune_submodels_version = "0.0.1"; 
-
 // Submodel_Information Immune_submodels_info; // not needed for now 
 
 Submodel_Information CD8_submodel_info; 
@@ -12,7 +11,7 @@ Submodel_Information Neutrophil_submodel_info;
 
 void create_infiltrating_immune_cell( Cell_Definition* pCD )
 {
-	static double Xmin = microenvironment.mesh.bounding_box[0]; 
+	/*static double Xmin = microenvironment.mesh.bounding_box[0]; 
 	static double Ymin = microenvironment.mesh.bounding_box[1]; 
 	static double Zmin = microenvironment.mesh.bounding_box[2]; 
 
@@ -49,14 +48,25 @@ void create_infiltrating_immune_cell( Cell_Definition* pCD )
 	std::vector<double> position = {0,0,0}; 
 	position[0] = Xmin + UniformRandom()*Xrange; 
 	position[1] = Ymin + UniformRandom()*Yrange; 
-	//position[2] = Zmin + UniformRandom()*Zrange; 
-		
+	position[2] = Zmin + UniformRandom()*Zrange; 
+	*/	
 	Cell* pC = create_cell( *pCD ); 
+	
+	std::vector<double> position = choose_vascularized_position();
+	//pCell->set_position( position )
+
 	pC->assign_position( position );
 	
 	return; 
 }
+std::vector<double> choose_vascularized_position( void )
+{
 
+	int my_voxel_index = (int) ( UniformRandom() * (vascularized_voxel_indices.size()-1) );
+	int n = vascularized_voxel_indices[ my_voxel_index ] ; 
+ 
+ return microenvironment.mesh.voxels[n].center; 
+}
 void create_infiltrating_immune_cell( std::string cell_name )
 {
 	create_infiltrating_immune_cell( find_cell_definition( cell_name ) ); 

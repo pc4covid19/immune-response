@@ -256,7 +256,7 @@
 				</mechanics>
 				
 				<motility>  
-					<speed units="micron/min">1</speed>
+					<speed units="micron/min">4</speed>
 					<persistence_time units="min">1</persistence_time>
 					<migration_bias units="dimensionless">.5</migration_bias>
 					
@@ -307,7 +307,7 @@
 				<max_apoptosis_half_max type="double" units="virion" description="viral load at which cells reach half max apoptosis rate">500</max_apoptosis_half_max>
 				<apoptosis_hill_power type="double" units="none" description="Hill power for viral load apoptosis response">1</apoptosis_hill_power> 
 				<virus_fraction_released_at_death type="double" units="none" description="fraction of internal virus released at cell death">0</virus_fraction_released_at_death>
-				<infected_cell_chemokine_secretion_rate units="1/min" type="double">10</infected_cell_chemokine_secretion_rate>
+				<infected_cell_chemokine_secretion_rate units="1/min" type="double">0.0417</infected_cell_chemokine_secretion_rate>
 		
 				
 				<!-- for the immune model --> 
@@ -321,7 +321,9 @@
 				<maximum_tolerated_ingested_debris units="micron^3">2000</maximum_tolerated_ingested_debris>
 				
 				<activated_macrophage_speed units="micron/min" type="double">0.4</activated_macrophage_speed>
-				<activated_macrophage_secretion_rate units="1/min" type="double">10</activated_macrophage_secretion_rate>
+				<activated_macrophage_secretion_rate units="1/min" type="double">0.0417</activated_macrophage_secretion_rate>
+				<activated_cell_chemokine_uptake_rate units="1/min" type="double">0.0510</activated_cell_chemokine_uptake_rate>
+				<activated_cell_cytokine_uptake_rate units="1/min" type="double">0.0018</activated_cell_cytokine_uptake_rate>
 				<!-- your custom data and parameters go here (for new submodels) --> 
 				
 			
@@ -414,8 +416,9 @@
 
 		<cell_definition name="neutrophil" parent_type="immune" ID="5">
 			<phenotype>
-				<motility>  
-					<migration_bias>0.1</migration_bias>
+				<motility>
+					<speed units="micron/min">19</speed>
+					<migration_bias>0.911</migration_bias>
 					<persistence_time>5</persistence_time>
 					<chemotaxis>
 						<substrate>virion</substrate>

@@ -211,7 +211,7 @@ void setup_tissue( void )
 		pC->assign_position( position );
 		
 		pC->custom_data["assembled_virion"] = 1000.0; 
-		pC->phenotype.secretion.secretion_rates[chemokine_index] = 10.0; 
+		pC->phenotype.secretion.secretion_rates[chemokine_index] = parameters.doubles("infected_cell_chemokine_secretion_rate"); 
 		pC->phenotype.secretion.saturation_densities[chemokine_index] = 1.0; 
 		
 		pC->functions.update_phenotype = TCell_induced_apoptosis; 

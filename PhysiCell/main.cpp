@@ -116,6 +116,8 @@ int main( int argc, char* argv[] )
 	create_cell_types();
 	
 	setup_tissue();
+	
+	choose_initialized_voxels();
 
 	/* Users typically stop modifying here. END USERMODS */ 
 	

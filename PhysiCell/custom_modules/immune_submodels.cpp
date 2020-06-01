@@ -9,6 +9,8 @@ Submodel_Information CD8_submodel_info;
 Submodel_Information Macrophage_submodel_info; 
 Submodel_Information Neutrophil_submodel_info; 
 
+//extern std::vector<int> vascularized_voxel_indices;
+
 void create_infiltrating_immune_cell( Cell_Definition* pCD )
 {
 	/*static double Xmin = microenvironment.mesh.bounding_box[0]; 
@@ -64,9 +66,10 @@ std::vector<double> choose_vascularized_position( void )
 
 	int my_voxel_index = (int) ( UniformRandom() * (vascularized_voxel_indices.size()-1) );
 	int n = vascularized_voxel_indices[ my_voxel_index ] ; 
- 
+	
  return microenvironment.mesh.voxels[n].center; 
 }
+
 void create_infiltrating_immune_cell( std::string cell_name )
 {
 	create_infiltrating_immune_cell( find_cell_definition( cell_name ) ); 

@@ -27,7 +27,10 @@ void extra_elastic_attachment_mechanics( Cell* pCell, Phenotype& phenotype, doub
 void attach_cells( Cell* pCell_1, Cell* pCell_2 );
 void detach_cells( Cell* pCell_1 , Cell* pCell_2 );
 
+std::vector<double> choose_vascularized_position( void );
 
+//void choose_initialized_voxels( void );
+extern std::vector<int> vascularized_voxel_indices;
 
 void CD8_Tcell_phenotype( Cell* pCell, Phenotype& phenotype, double dt ); 
 void CD8_Tcell_mechanics( Cell* pCell, Phenotype& phenotype, double dt ); 

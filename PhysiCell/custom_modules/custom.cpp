@@ -71,6 +71,7 @@
 
 Cell_Definition motile_cell; 
 
+
 void create_cell_types( void )
 {
 	// set the random seed 
@@ -183,6 +184,7 @@ void setup_tissue( void )
 	
 	Cell* pC;
 	
+		
 	// uninfected cells
 	for( int n = 0 ; n < parameters.ints("number_of_uninfected_cells") ; n++ )
 	{
@@ -198,6 +200,7 @@ void setup_tissue( void )
 		pC->functions.custom_cell_rule = extra_elastic_attachment_mechanics; 
 	}
 
+	
 	// infected cells, which secrete chemokine 
 	int chemokine_index = microenvironment.find_density_index( "chemokine" ); 
 	for( int n = 0 ; n < parameters.ints("number_of_infected_cells") ; n++ )
@@ -211,12 +214,13 @@ void setup_tissue( void )
 		pC->assign_position( position );
 		
 		pC->custom_data["assembled_virion"] = 1000.0; 
-		pC->phenotype.secretion.secretion_rates[chemokine_index] = 10.0; 
+		pC->phenotype.secretion.secretion_rates[chemokine_index] = parameters.doubles("infected_cell_chemokine_secretion_rate"); 
 		pC->phenotype.secretion.saturation_densities[chemokine_index] = 1.0; 
 		
 		pC->functions.update_phenotype = TCell_induced_apoptosis; 
 		pC->functions.custom_cell_rule = extra_elastic_attachment_mechanics; 
 	}
+	
 	
 	// dead infected cell 
 	int death_index = pC->phenotype.death.find_death_model_index( "apoptosis" ); 
@@ -233,45 +237,12 @@ void setup_tissue( void )
 		pC->custom_data["assembled_virion"] = 1000.0; 
 		pC->start_death( death_index ); 		
 	}	
-
-	// CD8 Tcells 
-	for( int n = 0 ; n < parameters.ints("number_of_CD8_Tcells") ; n++ )
-	{
-		std::vector<double> position = {0,0,0}; 
-		position[0] = Xmin + UniformRandom()*Xrange; 
-		position[1] = Ymin + UniformRandom()*Yrange; 
-		//position[2] = Zmin + UniformRandom()*Zrange; 
-		
-		pC = create_cell( get_cell_definition("CD8 Tcell" ) ); 
-		pC->assign_position( position );
-	}		
-
-	// macrophages
-	for( int n = 0 ; n < parameters.ints("number_of_macrophages") ; n++ )
-	{
-		std::vector<double> position = {0,0,0}; 
-		position[0] = Xmin + UniformRandom()*Xrange; 
-		position[1] = Ymin + UniformRandom()*Yrange; 
-		//position[2] = Zmin + UniformRandom()*Zrange; 
-		
-		pC = create_cell( get_cell_definition("macrophage" ) ); 
-		pC->assign_position( position );
-	}		
-
-	// neutrophils
-	for( int n = 0 ; n < parameters.ints("number_of_neutrophils") ; n++ )
-	{
-		std::vector<double> position = {0,0,0}; 
-		position[0] = Xmin + UniformRandom()*Xrange; 
-		position[1] = Ymin + UniformRandom()*Yrange; 
-		//position[2] = Zmin + UniformRandom()*Zrange; 
-		
-		pC = create_cell( get_cell_definition("neutrophil" ) ); 
-		pC->assign_position( position );
-	}	
+	initial_immune_cell_placement(); 
+	
 	
 	return; 
 }
+
 
 std::string blue_yellow_interpolation( double min, double val, double max )
 {
@@ -305,9 +276,17 @@ std::vector<std::string> immune_coloring_function( Cell* pCell )
 	
 	if( pCell->phenotype.death.dead == true )
 	{
-		output[0] = "black"; 		
-		output[2] = "black"; 		
-		output[3] = "black"; 		
+		if( pCell->type != lung_epithelial_type )
+		{
+			output[0] = parameters.strings("apoptotic_immune_color");		
+			output[2] = output[0]; 		
+			output[3] = output[0]; 	
+			return output; 
+		}
+
+		output[0] = parameters.strings("apoptotic_epithelium_color");	
+		output[2] = output[0]; 		
+		output[3] = output[0]; 		
 		return output; 
 	}
 

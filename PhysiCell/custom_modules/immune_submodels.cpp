@@ -9,49 +9,29 @@ Submodel_Information CD8_submodel_info;
 Submodel_Information Macrophage_submodel_info; 
 Submodel_Information Neutrophil_submodel_info; 
 
-//extern std::vector<int> vascularized_voxel_indices;
 
+std::vector<int> vascularized_voxel_indices;
+
+//extern std::vector<int> vascularized_voxel_indices;
+void choose_initialized_voxels( void )
+{
+	// read in percentage of tissue that's vascularised
+	double percentage_vascularised = parameters.doubles("perecentage_tissue_vascularized");
+	int max_voxel_index = microenvironment.mesh.voxels.size() - 1; 
+	int number_of_vascularized_voxels = (int) ( percentage_vascularised/100 * ( max_voxel_index+1) ); 
+
+	 // choose which voxels are veins
+	 for( int n = 0 ; n < number_of_vascularized_voxels ; n++ )
+	 {
+		int index_vascularised_voxel = (int) ( UniformRandom() * max_voxel_index ); 
+		vascularized_voxel_indices.push_back( index_vascularised_voxel ); 
+	 }
+	 
+	 return;
+}
 void create_infiltrating_immune_cell( Cell_Definition* pCD )
 {
-	/*static double Xmin = microenvironment.mesh.bounding_box[0]; 
-	static double Ymin = microenvironment.mesh.bounding_box[1]; 
-	static double Zmin = microenvironment.mesh.bounding_box[2]; 
-
-	static double Xmax = microenvironment.mesh.bounding_box[3]; 
-	static double Ymax = microenvironment.mesh.bounding_box[4]; 
-	static double Zmax = microenvironment.mesh.bounding_box[5]; 
 	
-	static bool setup_done = false; 
-	
-	if( default_microenvironment_options.simulate_2D == true && setup_done == false )
-	{
-		Zmin = 0.0; 
-		Zmax = 0.0; 
-	}
-	
-	static double Xrange = (Xmax - Xmin); 
-	static double Yrange = (Ymax - Ymin); 
-	static double Zrange = (Zmax - Zmin); 
-	
-	// keep cells away from the outer edge 
-	
-	if( setup_done == false )
-	{
-		Xmin += 0.1*Xrange; 
-		Ymin += 0.1*Yrange; 
-		Zmin = 0;
-		
-		Xrange *= 0.8;
-		Yrange *= 0.8;
-		Zrange = 0.0; 
-		setup_done = true; 
-	}
-	
-	std::vector<double> position = {0,0,0}; 
-	position[0] = Xmin + UniformRandom()*Xrange; 
-	position[1] = Ymin + UniformRandom()*Yrange; 
-	position[2] = Zmin + UniformRandom()*Zrange; 
-	*/	
 	Cell* pC = create_cell( *pCD ); 
 	
 	std::vector<double> position = choose_vascularized_position();
@@ -63,7 +43,7 @@ void create_infiltrating_immune_cell( Cell_Definition* pCD )
 }
 std::vector<double> choose_vascularized_position( void )
 {
-
+	//extern std::vector<int> vascularized_voxel_indices;
 	int my_voxel_index = (int) ( UniformRandom() * (vascularized_voxel_indices.size()-1) );
 	int n = vascularized_voxel_indices[ my_voxel_index ] ; 
 	

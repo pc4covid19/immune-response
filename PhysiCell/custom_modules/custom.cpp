@@ -71,7 +71,6 @@
 
 Cell_Definition motile_cell; 
 
-std::vector<int> vascularized_voxel_indicies;
 
 void create_cell_types( void )
 {
@@ -185,6 +184,7 @@ void setup_tissue( void )
 	
 	Cell* pC;
 	
+		
 	// uninfected cells
 	for( int n = 0 ; n < parameters.ints("number_of_uninfected_cells") ; n++ )
 	{
@@ -200,6 +200,7 @@ void setup_tissue( void )
 		pC->functions.custom_cell_rule = extra_elastic_attachment_mechanics; 
 	}
 
+	
 	// infected cells, which secrete chemokine 
 	int chemokine_index = microenvironment.find_density_index( "chemokine" ); 
 	for( int n = 0 ; n < parameters.ints("number_of_infected_cells") ; n++ )
@@ -220,6 +221,7 @@ void setup_tissue( void )
 		pC->functions.custom_cell_rule = extra_elastic_attachment_mechanics; 
 	}
 	
+	
 	// dead infected cell 
 	int death_index = pC->phenotype.death.find_death_model_index( "apoptosis" ); 
 	for( int n = 0 ; n < parameters.ints("number_of_dead_cells") ; n++ )
@@ -235,26 +237,12 @@ void setup_tissue( void )
 		pC->custom_data["assembled_virion"] = 1000.0; 
 		pC->start_death( death_index ); 		
 	}	
-
 	initial_immune_cell_placement(); 
+	
 	
 	return; 
 }
-void choose_initialized_voxels( void )
-{
-	// read in percentage of tissue that's vascularised
-	double percentage_vascularised = parameters.doubles("perecentage_tissue_vascularized");
-	int max_voxel_index = microenvironment.mesh.voxels.size() - 1; 
-	int number_of_vascularized_voxels = (int) ( percentage_vascularised/100 * ( max_voxel_index+1) ); 
- 
-	 // choose which voxels are veins
-	 for( int n = 0 ; n < number_of_vascularized_voxels ; n++ )
-	 {
-		int index_vascularised_voxel = (int) ( UniformRandom() * max_voxel_index ); 
-		vascularized_voxel_indicies.push_back( index_vascularised_voxel ); 
-	 }
-	 return;
-}
+
 
 std::string blue_yellow_interpolation( double min, double val, double max )
 {

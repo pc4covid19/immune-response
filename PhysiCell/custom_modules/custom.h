@@ -88,12 +88,6 @@ void create_infiltrating_neutrophil(void);
 void create_infiltrating_Tcell(void);
 
 
-extern std::vector<int> vascularized_voxel_indices;
-
-void choose_initialized_voxels( void );
-
-//std::vector<double> choose_vascularized_position( void );
-
 std::string blue_yellow_interpolation( double min, double val, double max ); 
 
 std::vector<std::string> immune_coloring_function( Cell* );

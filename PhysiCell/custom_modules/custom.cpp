@@ -213,10 +213,15 @@ void setup_tissue( void )
 		pC = create_cell( get_cell_definition("lung epithelium" ) ); 
 		pC->assign_position( position );
 		
-		pC->custom_data["assembled_virion"] = 1000.0; 
-		pC->phenotype.secretion.secretion_rates[chemokine_index] = parameters.doubles("infected_cell_chemokine_secretion_rate"); 
-		pC->phenotype.secretion.saturation_densities[chemokine_index] = 1.0; 
+		pC->custom_data["viral_protein"] = 1000.0*UniformRandom(); 
+		pC->custom_data["assembled_virion"] = 1000.0*UniformRandom(); 
 		
+		// infected cells secrete chemokine at a rate proportional to the amount of viral protein
+		if(pC->custom_data["viral_protein"]/parameters.doubles("max_apoptosis_half_max")>1)
+		{pC->phenotype.secretion.secretion_rates[chemokine_index] = parameters.doubles("infected_cell_chemokine_secretion_rate")*(pC->custom_data["viral_protein"]/parameters.doubles("max_apoptosis_half_max"));}	
+		else
+		{pC->phenotype.secretion.secretion_rates[chemokine_index] = parameters.doubles("infected_cell_chemokine_secretion_rate")*1;}
+		pC->phenotype.secretion.saturation_densities[chemokine_index] = 1.0; 
 		pC->functions.update_phenotype = TCell_induced_apoptosis; 
 		pC->functions.custom_cell_rule = extra_elastic_attachment_mechanics; 
 	}

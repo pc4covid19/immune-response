@@ -263,7 +263,17 @@ void macrophage_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
 //	std::cout << __FUNCTION__ << " " << __LINE__ << std::endl; 
 	static int apoptosis_index = phenotype.death.find_death_model_index( "apoptosis" ); 
 	static Cell_Definition* pCD = find_cell_definition( "macrophage" ); 
-	
+	static int proinflammatory_cytokine_index = microenvironment.find_density_index( "pro-inflammatory cytokine");
+	static int chemokine_index = microenvironment.find_density_index( "chemokine");
+	static int eat_me_signal_index = microenvironment.find_density_index( "eat me");
+			
+	// determine bias_direction for macrophage based on "eat me" signals and chemokine
+	double sensitivity_chemokine = parameters.doubles("sensitivity_to_chemokine_chemotaxis");
+	double sensitivity_eat_me = parameters.doubles("sensitivity_to_eat_me_chemotaxis");
+	std::cout<<"here1"<<std::endl;
+	pCell->phenotype.motility.migration_bias_direction = sensitivity_chemokine*pCell->nearest_gradient(chemokine_index)+sensitivity_eat_me*pCell->nearest_gradient(eat_me_signal_index);
+	normalize( &( phenotype.motility.migration_bias_direction) );
+	std::cout<<"here2"<<std::endl;
 	// make changes to volume change rate??
 
 	// if too much debris, comit to apoptosis 	
@@ -274,6 +284,9 @@ void macrophage_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
 	if( ingested_debris > pCell->custom_data[ "maximum_tolerated_ingested_debris" ] )
 	{
 		pCell->start_death( apoptosis_index ); 
+		pCell->phenotype.secretion.secretion_rates[proinflammatory_cytokine_index] = 0; 
+		pCell->phenotype.secretion.secretion_rates[eat_me_signal_index] = parameters.doubles("eat_me_signam_secretion_rate"); 
+		
 //		std::cout << " I ate to much and must therefore die " << std::endl; 
 //		system("pause"); 
 	}
@@ -308,9 +321,6 @@ void macrophage_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
 //			std::cout << "\t\t\t" << pCell  << " eats " << pTestCell << std::endl; 
 			pCell->ingest_cell( pTestCell ); 
 			
-			static int proinflammatory_cytokine_index = microenvironment.find_density_index( "pro-inflammatory cytokine");
-			static int chemokine_index = microenvironment.find_density_index( "chemokine");
-			
 			pCell->phenotype.secretion.secretion_rates[proinflammatory_cytokine_index] = 
 				parameters.doubles("activated_macrophage_secretion_rate"); // 10;
 			pCell->phenotype.secretion.uptake_rates[chemokine_index] = 
@@ -336,7 +346,7 @@ void macrophage_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
 		n++; 
 	}
 //	std::cout << " " << std::endl; 
-	
+				
 	return; 
 }
 
@@ -350,7 +360,9 @@ void neutrophil_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
 	//	std::cout << __FUNCTION__ << " " << __LINE__ << std::endl; 
 	static int apoptosis_index = phenotype.death.find_death_model_index( "apoptosis" ); 
 	static Cell_Definition* pCD = find_cell_definition( "neutrophil" ); 
-	
+	static int proinflammatory_cytokine_index = microenvironment.find_density_index( "pro-inflammatory cytokine");
+	static int eat_me_signal_index = microenvironment.find_density_index( "eat me signal" ); 
+		
 	// make changes to volume change rate??
 
 	// if too much debris, comit to apoptosis 	
@@ -361,6 +373,9 @@ void neutrophil_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
 	if( ingested_debris > pCell->custom_data[ "maximum_tolerated_ingested_debris" ] )
 	{
 		pCell->start_death( apoptosis_index ); 
+		pCell->phenotype.secretion.secretion_rates[proinflammatory_cytokine_index] = 0; 
+		pCell->phenotype.secretion.secretion_rates[eat_me_signal_index] = parameters.doubles("eat_me_signam_secretion_rate"); 
+		
 //		std::cout << " I ate to much and must therefore die " << std::endl; 
 //		system("pause"); 
 	}
@@ -672,6 +687,9 @@ Cell* immune_cell_check_neighbors_for_attachment( Cell* pAttacker , double dt )
 void TCell_induced_apoptosis( Cell* pCell, Phenotype& phenotype, double dt )
 {
 	static int apoptosis_index = phenotype.death.find_death_model_index( "apoptosis" ); 
+	static int eat_me_signal_index = microenvironment.find_density_index( "eat me signal" ); 
+	static int proinflammatory_cytokine_index = microenvironment.find_density_index("pro-inflammatory cytokine");
+	
 	if( pCell->custom_data["TCell_contact_time"] > pCell->custom_data["TCell_contact_death_threshold"] )
 	{
 		// std::cout << "I die now" << std::endl; 
@@ -684,6 +702,8 @@ void TCell_induced_apoptosis( Cell* pCell, Phenotype& phenotype, double dt )
 		}
 		
 		pCell->start_death( apoptosis_index ); 
+		pCell->phenotype.secretion.secretion_rates[proinflammatory_cytokine_index] = 0; 
+		pCell->phenotype.secretion.secretion_rates[eat_me_signal_index] = parameters.doubles("eat_me_signal_secretion_rate"); 
 		pCell->functions.update_phenotype = NULL; 
 	}
 	

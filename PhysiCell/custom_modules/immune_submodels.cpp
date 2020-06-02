@@ -41,6 +41,52 @@ void create_infiltrating_immune_cell( Cell_Definition* pCD )
 	
 	return; 
 }
+
+void create_infiltrating_immune_cell_initial( Cell_Definition* pCD )
+{
+	
+	Cell* pC = create_cell( *pCD ); 
+	
+	// randomly place macrophages intially
+	double Xmin = microenvironment.mesh.bounding_box[0]; 
+	double Ymin = microenvironment.mesh.bounding_box[1]; 
+	double Zmin = microenvironment.mesh.bounding_box[2]; 
+
+	double Xmax = microenvironment.mesh.bounding_box[3]; 
+	double Ymax = microenvironment.mesh.bounding_box[4]; 
+	double Zmax = microenvironment.mesh.bounding_box[5]; 
+	
+	if( default_microenvironment_options.simulate_2D == true )
+	{
+		Zmin = 0.0; 
+		Zmax = 0.0; 
+	}
+	
+	double Xrange = (Xmax - Xmin); 
+	double Yrange = (Ymax - Ymin); 
+	double Zrange = (Zmax - Zmin); 
+	
+	// keep cells away from the outer edge 
+	
+	Xmin += 0.1*Xrange; 
+	Ymin += 0.1*Yrange; 
+	Zmin = 0;
+	
+	Xrange *= 0.8;
+	Yrange *= 0.8;
+	Zrange = 0.0; 
+	
+	// create some of each type of cell 
+	
+	std::vector<double> position = {0,0,0}; 
+	position[0] = Xmin + UniformRandom()*Xrange; 
+	position[1] = Ymin + UniformRandom()*Yrange; 
+
+	pC->assign_position( position );
+	
+	return; 
+}
+
 std::vector<double> choose_vascularized_position( void )
 {
 	//extern std::vector<int> vascularized_voxel_indices;
@@ -105,12 +151,15 @@ void create_infiltrating_neutrophil(void)
 	pC->assign_position( position );
 	
 	static int proinflammatory_cytokine_index = microenvironment.find_density_index( "pro-inflammatory cytokine");
+	static int debris_index = microenvironment.find_density_index( "debris");
 	static int chemokine_index = microenvironment.find_density_index( "chemokine");
 			
 	pC->phenotype.secretion.uptake_rates[chemokine_index] = 
 		parameters.doubles("activated_cell_chemokine_uptake_rate"); // 10;
 	pC->phenotype.secretion.uptake_rates[proinflammatory_cytokine_index] = 
 		parameters.doubles("activated_cell_cytokine_uptake_rate"); // 10;
+	pC->phenotype.secretion.uptake_rates[debris_index] = 
+		parameters.doubles("activated_cell_chemokine_uptake_rate"); // 10;
 	
 	return;
 }
@@ -168,12 +217,15 @@ void create_infiltrating_Tcell(void)
 	pC->assign_position( position );
 		
 	static int proinflammatory_cytokine_index = microenvironment.find_density_index( "pro-inflammatory cytokine");
+	static int debris_index = microenvironment.find_density_index( "debris");
 	static int chemokine_index = microenvironment.find_density_index( "chemokine");
 	
 	pC->phenotype.secretion.uptake_rates[chemokine_index] = 
 		parameters.doubles("activated_cell_chemokine_uptake_rate"); // 10;
 	pC->phenotype.secretion.uptake_rates[proinflammatory_cytokine_index] = 
 		parameters.doubles("activated_cell_cytokine_uptake_rate"); // 10;
+	pC->phenotype.secretion.uptake_rates[debris_index] = 
+		parameters.doubles("activated_cell_chemokine_uptake_rate"); // 10;
 	return;
 }
 
@@ -265,12 +317,12 @@ void macrophage_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
 	static Cell_Definition* pCD = find_cell_definition( "macrophage" ); 
 	static int proinflammatory_cytokine_index = microenvironment.find_density_index( "pro-inflammatory cytokine");
 	static int chemokine_index = microenvironment.find_density_index( "chemokine");
-	static int eat_me_signal_index = microenvironment.find_density_index( "eat me signal");
+	static int debris_index = microenvironment.find_density_index( "debris");
 			
 	// determine bias_direction for macrophage based on "eat me" signals and chemokine
 	double sensitivity_chemokine = parameters.doubles("sensitivity_to_chemokine_chemotaxis");
 	double sensitivity_eat_me = parameters.doubles("sensitivity_to_eat_me_chemotaxis");
-	pCell->phenotype.motility.migration_bias_direction = sensitivity_chemokine*pCell->nearest_gradient(chemokine_index)+sensitivity_eat_me*pCell->nearest_gradient(eat_me_signal_index);
+	pCell->phenotype.motility.migration_bias_direction = sensitivity_chemokine*pCell->nearest_gradient(chemokine_index)+sensitivity_eat_me*pCell->nearest_gradient(debris_index);
 	normalize( &( phenotype.motility.migration_bias_direction) );
 
 	// make changes to volume change rate??
@@ -284,7 +336,7 @@ void macrophage_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
 	{
 		pCell->start_death( apoptosis_index ); 
 		pCell->phenotype.secretion.secretion_rates[proinflammatory_cytokine_index] = 0; 
-		pCell->phenotype.secretion.secretion_rates[eat_me_signal_index] = parameters.doubles("eat_me_signal_secretion_rate"); 
+		pCell->phenotype.secretion.secretion_rates[debris_index] = parameters.doubles("debris_secretion_rate"); 
 		
 //		std::cout << " I ate to much and must therefore die " << std::endl; 
 //		system("pause"); 
@@ -327,6 +379,8 @@ void macrophage_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
 				parameters.doubles("activated_cell_chemokine_uptake_rate"); // 10;
 			pCell->phenotype.secretion.uptake_rates[proinflammatory_cytokine_index] = 
 				parameters.doubles("activated_cell_cytokine_uptake_rate"); // 10;
+			pCell->phenotype.secretion.uptake_rates[debris_index] = 
+				parameters.doubles("activated_cell_chemokine_uptake_rate"); // 10;
 					
       
       // Paul M says: This should be read from a parameter value instead of hard-coded. 
@@ -361,13 +415,13 @@ void neutrophil_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
 	static int apoptosis_index = phenotype.death.find_death_model_index( "apoptosis" ); 
 	static Cell_Definition* pCD = find_cell_definition( "neutrophil" ); 
 	static int proinflammatory_cytokine_index = microenvironment.find_density_index( "pro-inflammatory cytokine");
-	static int eat_me_signal_index = microenvironment.find_density_index( "eat me signal" ); 
+	static int debris_index = microenvironment.find_density_index( "debris" ); 
 	static int chemokine_index = microenvironment.find_density_index( "chemokine");
 			
 	// determine bias_direction for macrophage based on "eat me" signals and chemokine
 	double sensitivity_chemokine = parameters.doubles("sensitivity_to_chemokine_chemotaxis");
 	double sensitivity_eat_me = parameters.doubles("sensitivity_to_eat_me_chemotaxis");
-	pCell->phenotype.motility.migration_bias_direction = sensitivity_chemokine*pCell->nearest_gradient(chemokine_index)+sensitivity_eat_me*pCell->nearest_gradient(eat_me_signal_index);
+	pCell->phenotype.motility.migration_bias_direction = sensitivity_chemokine*pCell->nearest_gradient(chemokine_index)+sensitivity_eat_me*pCell->nearest_gradient(debris_index);
 	normalize( &( phenotype.motility.migration_bias_direction) );
 	
 	// make changes to volume change rate??
@@ -381,7 +435,7 @@ void neutrophil_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
 	{
 		pCell->start_death( apoptosis_index ); 
 		pCell->phenotype.secretion.secretion_rates[proinflammatory_cytokine_index] = 0; 
-		pCell->phenotype.secretion.secretion_rates[eat_me_signal_index] = parameters.doubles("eat_me_signal_secretion_rate"); 
+		pCell->phenotype.secretion.secretion_rates[debris_index] = parameters.doubles("debris_secretion_rate"); 
 		
 //		std::cout << " I ate to much and must therefore die " << std::endl; 
 //		system("pause"); 
@@ -429,6 +483,9 @@ void neutrophil_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
 				parameters.doubles("activated_cell_chemokine_uptake_rate"); // 10;
 			pCell->phenotype.secretion.uptake_rates[proinflammatory_cytokine_index] = 
 				parameters.doubles("activated_cell_cytokine_uptake_rate"); // 10;
+			pCell->phenotype.secretion.uptake_rates[debris_index] = 
+				parameters.doubles("activated_cell_chemokine_uptake_rate"); // 10;
+				
 					
       
       // Paul M says: This should be read from a parameter value instead of hard-coded. 
@@ -701,7 +758,7 @@ Cell* immune_cell_check_neighbors_for_attachment( Cell* pAttacker , double dt )
 void TCell_induced_apoptosis( Cell* pCell, Phenotype& phenotype, double dt )
 {
 	static int apoptosis_index = phenotype.death.find_death_model_index( "apoptosis" ); 
-	static int eat_me_signal_index = microenvironment.find_density_index( "eat me signal" ); 
+	static int debris_index = microenvironment.find_density_index( "debris" ); 
 	static int proinflammatory_cytokine_index = microenvironment.find_density_index("pro-inflammatory cytokine");
 	
 	if( pCell->custom_data["TCell_contact_time"] > pCell->custom_data["TCell_contact_death_threshold"] )
@@ -717,7 +774,7 @@ void TCell_induced_apoptosis( Cell* pCell, Phenotype& phenotype, double dt )
 		
 		pCell->start_death( apoptosis_index ); 
 		pCell->phenotype.secretion.secretion_rates[proinflammatory_cytokine_index] = 0; 
-		pCell->phenotype.secretion.secretion_rates[eat_me_signal_index] = parameters.doubles("eat_me_signal_secretion_rate"); 
+		pCell->phenotype.secretion.secretion_rates[debris_index] = parameters.doubles("debris_secretion_rate"); 
 		pCell->functions.update_phenotype = NULL; 
 	}
 	
@@ -740,6 +797,7 @@ void immune_cell_recruitment( double dt )
 	if( t_immune > t_next_immune- tolerance )
 	{
 		double elapsed_time = (t_immune - t_last_immune );
+		std::cout<<"t immune: "<<t_immune<<" elapsed time "<<elapsed_time<<std::endl;
 //		std::cout << "Immune time! " << t_immune << " (elapsed: " << elapsed_time << ") " << std::endl; 
 		
 		// neutrophil recruitment 
@@ -830,8 +888,11 @@ void immune_cell_recruitment( double dt )
 		t_next_immune = t_immune + dt_immune; 
 		
 		std::cout << "\t\tnext immune time: " << t_next_immune << std::endl;  
+		
+		std::cout<<"t immune: "<<t_immune<<" elapsed time "<<elapsed_time<<std::endl;
 	}
 	t_immune += dt; 
+	
 	return; 
 }
 
@@ -847,7 +908,7 @@ void initial_immune_cell_placement( void )
 
 	// macrophages 
 	for( int n = 0 ; n < parameters.ints("number_of_macrophages") ; n++ )
-	{ create_infiltrating_immune_cell( pMF ); }		
+	{ create_infiltrating_immune_cell_initial( pMF ); }		
 
 	// neutrophils 	for( int n = 0 ; n < parameters.ints("number_of_neutrophils") ; n++ )
 	{ create_infiltrating_immune_cell( pN ); }		

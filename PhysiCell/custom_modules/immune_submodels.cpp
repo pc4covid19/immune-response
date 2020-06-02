@@ -265,15 +265,14 @@ void macrophage_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
 	static Cell_Definition* pCD = find_cell_definition( "macrophage" ); 
 	static int proinflammatory_cytokine_index = microenvironment.find_density_index( "pro-inflammatory cytokine");
 	static int chemokine_index = microenvironment.find_density_index( "chemokine");
-	static int eat_me_signal_index = microenvironment.find_density_index( "eat me");
+	static int eat_me_signal_index = microenvironment.find_density_index( "eat me signal");
 			
 	// determine bias_direction for macrophage based on "eat me" signals and chemokine
 	double sensitivity_chemokine = parameters.doubles("sensitivity_to_chemokine_chemotaxis");
 	double sensitivity_eat_me = parameters.doubles("sensitivity_to_eat_me_chemotaxis");
-	std::cout<<"here1"<<std::endl;
 	pCell->phenotype.motility.migration_bias_direction = sensitivity_chemokine*pCell->nearest_gradient(chemokine_index)+sensitivity_eat_me*pCell->nearest_gradient(eat_me_signal_index);
 	normalize( &( phenotype.motility.migration_bias_direction) );
-	std::cout<<"here2"<<std::endl;
+
 	// make changes to volume change rate??
 
 	// if too much debris, comit to apoptosis 	
@@ -285,7 +284,7 @@ void macrophage_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
 	{
 		pCell->start_death( apoptosis_index ); 
 		pCell->phenotype.secretion.secretion_rates[proinflammatory_cytokine_index] = 0; 
-		pCell->phenotype.secretion.secretion_rates[eat_me_signal_index] = parameters.doubles("eat_me_signam_secretion_rate"); 
+		pCell->phenotype.secretion.secretion_rates[eat_me_signal_index] = parameters.doubles("eat_me_signal_secretion_rate"); 
 		
 //		std::cout << " I ate to much and must therefore die " << std::endl; 
 //		system("pause"); 
@@ -303,6 +302,7 @@ void macrophage_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
 	{ return; } 
 	
 //	std::cout << "\t\t" << __FUNCTION__ << " " << __LINE__ << std::endl; 
+	double macrophage_probability_of_phagocytosis = parameters.doubles("macrophage_probability_of_phagocytosis");
 
 	int n = 0; 
 	Cell* pTestCell = neighbors[n]; 
@@ -313,7 +313,7 @@ void macrophage_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
 //		std::cout << pTestCell << " "; 
 		// if it is not me and not a macrophage 
 		if( pTestCell != pCell && pTestCell->phenotype.death.dead == true && 
-			pTestCell->phenotype.flagged_for_removal == false )
+			pTestCell->phenotype.flagged_for_removal == false && UniformRandom()<macrophage_probability_of_phagocytosis)
 		{
 //			std::cout << std::endl; 
 //			std::cout << "\t\tnom nom nom" << std::endl; 
@@ -331,8 +331,8 @@ void macrophage_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
       
       // Paul M says: This should be read from a parameter value instead of hard-coded. 
 
-			phenotype.motility.migration_speed = 
-				pCell->custom_data[ "activated_macrophage_speed" ]; 
+			pCell->phenotype.motility.migration_speed = 
+				parameters.doubles("activated_macrophage_speed"); 
 			
 //			system("pause");
 			return; 
@@ -362,7 +362,14 @@ void neutrophil_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
 	static Cell_Definition* pCD = find_cell_definition( "neutrophil" ); 
 	static int proinflammatory_cytokine_index = microenvironment.find_density_index( "pro-inflammatory cytokine");
 	static int eat_me_signal_index = microenvironment.find_density_index( "eat me signal" ); 
-		
+	static int chemokine_index = microenvironment.find_density_index( "chemokine");
+			
+	// determine bias_direction for macrophage based on "eat me" signals and chemokine
+	double sensitivity_chemokine = parameters.doubles("sensitivity_to_chemokine_chemotaxis");
+	double sensitivity_eat_me = parameters.doubles("sensitivity_to_eat_me_chemotaxis");
+	pCell->phenotype.motility.migration_bias_direction = sensitivity_chemokine*pCell->nearest_gradient(chemokine_index)+sensitivity_eat_me*pCell->nearest_gradient(eat_me_signal_index);
+	normalize( &( phenotype.motility.migration_bias_direction) );
+	
 	// make changes to volume change rate??
 
 	// if too much debris, comit to apoptosis 	
@@ -374,7 +381,7 @@ void neutrophil_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
 	{
 		pCell->start_death( apoptosis_index ); 
 		pCell->phenotype.secretion.secretion_rates[proinflammatory_cytokine_index] = 0; 
-		pCell->phenotype.secretion.secretion_rates[eat_me_signal_index] = parameters.doubles("eat_me_signam_secretion_rate"); 
+		pCell->phenotype.secretion.secretion_rates[eat_me_signal_index] = parameters.doubles("eat_me_signal_secretion_rate"); 
 		
 //		std::cout << " I ate to much and must therefore die " << std::endl; 
 //		system("pause"); 
@@ -396,13 +403,16 @@ void neutrophil_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
 	int n = 0; 
 	Cell* pTestCell = neighbors[n]; 
 //	std::cout << pCell << " vs " ; 
+
+	double neutrophil_probability_of_phagocytosis = parameters.doubles("neutrophil_probability_of_phagocytosis");
+
 	while( n < neighbors.size() )
 	{
 		pTestCell = neighbors[n]; 
 //		std::cout << pTestCell << " "; 
 		// if it is not me and not a macrophage 
 		if( pTestCell != pCell && pTestCell->phenotype.death.dead == true && 
-			pTestCell->phenotype.flagged_for_removal == false )
+			pTestCell->phenotype.flagged_for_removal == false && UniformRandom()<neutrophil_probability_of_phagocytosis)
 		{
 //			std::cout << std::endl; 
 //			std::cout << "\t\tnom nom nom" << std::endl; 
@@ -423,8 +433,8 @@ void neutrophil_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
       
       // Paul M says: This should be read from a parameter value instead of hard-coded. 
 
-			phenotype.motility.migration_speed = 
-				pCell->custom_data[ "activated_macrophage_speed" ]; 
+			pCell->phenotype.motility.migration_speed = 
+				parameters.doubles("activated_neutrophil_speed" ); 
 			
 //			system("pause");
 			return; 
@@ -439,6 +449,10 @@ void neutrophil_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
 	}
 //	std::cout << " " << std::endl; 
 	
+	// if neutrophil isn't killing any cell then return to normal speed
+	pCell->phenotype.motility.migration_speed = 
+		parameters.doubles("normal_neutrophil_speed"); 
+				
 	return; 
 }
 

@@ -164,7 +164,7 @@
 			<Dirichlet_boundary_condition units="mol/um^3" enabled="true">0</Dirichlet_boundary_condition>
 		</variable>
 		
-		<variable name="eat me signal" units="mol/um^3" ID="5">
+		<variable name="debris" units="mol/um^3" ID="5">
 			<physical_parameter_set>
 				<diffusion_coefficient units="micron^2/min">555.56</diffusion_coefficient>
 				<decay_rate units="1/min">1.02e-2</decay_rate>  
@@ -317,7 +317,7 @@
 				<apoptosis_hill_power type="double" units="none" description="Hill power for viral load apoptosis response">1</apoptosis_hill_power> 
 				<virus_fraction_released_at_death type="double" units="none" description="fraction of internal virus released at cell death">0</virus_fraction_released_at_death>
 				<infected_cell_chemokine_secretion_rate units="1/min" type="double">0.0417</infected_cell_chemokine_secretion_rate>
-				<eat_me_signal_secretion_rate units="1/min" type="double">0.0417</eat_me_signal_secretion_rate>
+				<debris_secretion_rate units="1/min" type="double">0.0417</debris_secretion_rate>
 		
 				<!-- for the immune model --> 
 				<TCell_contact_time type="double" units="min">0.0</TCell_contact_time>
@@ -447,7 +447,7 @@
 				</motility>
 				<secretion>
 					<substrate name="virion">
-						<uptake_rate units="1/min">1</uptake_rate>
+						<uptake_rate units="1/min">0.001</uptake_rate>
 					</substrate> 	
 				</secretion>
 				<volume>

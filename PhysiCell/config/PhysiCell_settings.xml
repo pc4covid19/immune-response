@@ -327,7 +327,7 @@
 				<TCell_contact_death_threshold units="min">50</TCell_contact_death_threshold>
 				<max_attachment_distance units="micron">15</max_attachment_distance>
 				<elastic_attachment_coefficient units="1/min">0.01</elastic_attachment_coefficient>
-				<maximum_tolerated_ingested_debris units="micron^3">2000</maximum_tolerated_ingested_debris>
+				<maximum_tolerated_ingested_debris units="micron^3">1.8</maximum_tolerated_ingested_debris>
 				
 				<!-- macrophage -->
 				<activated_macrophage_speed units="micron/min" type="double">0.4</activated_macrophage_speed>

@@ -332,7 +332,6 @@ void macrophage_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
 //	std::cout << __FUNCTION__ << " " << __LINE__ << std::endl; 
 
 	double change_in_ingested_debris = ( phenotype.volume.total/pCD->phenotype.volume.total ); 
-	std::cout<<change_in_ingested_debris<<std::endl;
 	if( change_in_ingested_debris > pCell->custom_data[ "maximum_tolerated_ingested_debris" ] )
 	{
 		pCell->start_death( apoptosis_index ); 

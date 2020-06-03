@@ -316,8 +316,8 @@
 				<max_apoptosis_half_max type="double" units="virion" description="viral load at which cells reach half max apoptosis rate">500</max_apoptosis_half_max>
 				<apoptosis_hill_power type="double" units="none" description="Hill power for viral load apoptosis response">1</apoptosis_hill_power> 
 				<virus_fraction_released_at_death type="double" units="none" description="fraction of internal virus released at cell death">0</virus_fraction_released_at_death>
-				<infected_cell_chemokine_secretion_rate units="1/min" type="double">0.0417</infected_cell_chemokine_secretion_rate>
-				<debris_secretion_rate units="1/min" type="double">0.0417</debris_secretion_rate>
+				<infected_cell_chemokine_secretion_rate units="1/min" type="double">0.8254</infected_cell_chemokine_secretion_rate>
+				<debris_secretion_rate units="1/min" type="double">0.8254</debris_secretion_rate>
 		
 				<!-- for the immune model --> 
 				<TCell_contact_time type="double" units="min">0.0</TCell_contact_time>
@@ -331,7 +331,7 @@
 				
 				<!-- macrophage -->
 				<activated_macrophage_speed units="micron/min" type="double">0.4</activated_macrophage_speed>
-				<activated_macrophage_secretion_rate units="1/min" type="double">0.0417</activated_macrophage_secretion_rate>
+				<activated_macrophage_secretion_rate units="1/min" type="double">0.8254</activated_macrophage_secretion_rate>
 				<macrophage_probability_of_phagocytosis units="dimensionless" type="double">1</macrophage_probability_of_phagocytosis>
 				
 				<activated_cell_chemokine_uptake_rate units="1/min" type="double">0.0510</activated_cell_chemokine_uptake_rate>

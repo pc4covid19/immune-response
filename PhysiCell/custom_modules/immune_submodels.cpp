@@ -797,7 +797,7 @@ void immune_cell_recruitment( double dt )
 	if( t_immune > t_next_immune- tolerance )
 	{
 		double elapsed_time = (t_immune - t_last_immune );
-		std::cout<<"t immune: "<<t_immune<<" elapsed time "<<elapsed_time<<std::endl;
+//		std::cout<<"t immune: "<<t_immune<<" elapsed time "<<elapsed_time<<std::endl;
 //		std::cout << "Immune time! " << t_immune << " (elapsed: " << elapsed_time << ") " << std::endl; 
 		
 		// neutrophil recruitment 
@@ -887,9 +887,9 @@ void immune_cell_recruitment( double dt )
 		t_last_immune = t_immune; 
 		t_next_immune = t_immune + dt_immune; 
 		
-		std::cout << "\t\tnext immune time: " << t_next_immune << std::endl;  
+//		std::cout << "\t\tnext immune time: " << t_next_immune << std::endl;  
 		
-		std::cout<<"t immune: "<<t_immune<<" elapsed time "<<elapsed_time<<std::endl;
+//		std::cout<<"t immune: "<<t_immune<<" elapsed time "<<elapsed_time<<std::endl;
 	}
 	t_immune += dt; 
 	

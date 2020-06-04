@@ -428,7 +428,9 @@
 						<enabled>true</enabled>
 						<use_2D>true</use_2D>					
 						<chemotaxis>
+							<enabled>true</enabled>
 							<substrate>chemokine</substrate>
+							<direction>1</direction>
 						</chemotaxis>
 					</options>
 				</motility>
@@ -453,7 +455,9 @@
 						<enabled>true</enabled>
 						<use_2D>true</use_2D>					
 						<chemotaxis>
+							<enabled>true</enabled>
 							<substrate>virion</substrate>
+							<direction>1</direction>							
 						</chemotaxis>
 					</options>
 				</motility>

@@ -148,15 +148,6 @@ immune_submodels.o: ./custom_modules/immune_submodels.cpp
 
 # cleanup
 
-reset:
-	rm -f *.cpp 
-	cp ./sample_projects/Makefile-default Makefile 
-	rm -f ./custom_modules/*
-	touch ./custom_modules/empty.txt 
-	touch ALL_CITATIONS.txt 
-	rm ALL_CITATIONS.txt 
-	cp ./config/PhysiCell_settings-backup.xml ./config/PhysiCell_settings.xml 
-	
 clean:
 	rm -f *.o
 	rm -f $(PROGRAM_NAME)*

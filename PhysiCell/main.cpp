@@ -105,6 +105,7 @@ int main( int argc, char* argv[] )
 	
 	setup_microenvironment(); // modify this in the custom code 
 	
+	choose_initialized_voxels();
 	/* PhysiCell setup */ 
  	
 	// set mechanics voxel size, and match the data structure to BioFVM
@@ -116,6 +117,7 @@ int main( int argc, char* argv[] )
 	create_cell_types();
 	
 	setup_tissue();
+	
 
 	/* Users typically stop modifying here. END USERMODS */ 
 	

@@ -3,63 +3,103 @@
 using namespace PhysiCell; 
 
 std::string immune_submodels_version = "0.0.1"; 
-
 // Submodel_Information Immune_submodels_info; // not needed for now 
 
 Submodel_Information CD8_submodel_info; 
 Submodel_Information Macrophage_submodel_info; 
 Submodel_Information Neutrophil_submodel_info; 
 
+
+std::vector<int> vascularized_voxel_indices;
+
+//extern std::vector<int> vascularized_voxel_indices;
+void choose_initialized_voxels( void )
+{
+	// read in percentage of tissue that's vascularised
+	double percentage_vascularised = parameters.doubles("perecentage_tissue_vascularized");
+	int max_voxel_index = microenvironment.mesh.voxels.size() - 1; 
+	int number_of_vascularized_voxels = (int) ( percentage_vascularised/100 * ( max_voxel_index+1) ); 
+
+	 // choose which voxels are veins
+	 for( int n = 0 ; n < number_of_vascularized_voxels ; n++ )
+	 {
+		int index_vascularised_voxel = (int) ( UniformRandom() * max_voxel_index ); 
+		vascularized_voxel_indices.push_back( index_vascularised_voxel ); 
+	 }
+	 
+	 return;
+}
 void create_infiltrating_immune_cell( Cell_Definition* pCD )
 {
-	static double Xmin = microenvironment.mesh.bounding_box[0]; 
-	static double Ymin = microenvironment.mesh.bounding_box[1]; 
-	static double Zmin = microenvironment.mesh.bounding_box[2]; 
-
-	static double Xmax = microenvironment.mesh.bounding_box[3]; 
-	static double Ymax = microenvironment.mesh.bounding_box[4]; 
-	static double Zmax = microenvironment.mesh.bounding_box[5]; 
 	
-	static bool setup_done = false; 
-	
-	if( default_microenvironment_options.simulate_2D == true && setup_done == false )
-	{
-		Zmin = 0.0; 
-		Zmax = 0.0; 
-	}
-	
-	static double Xrange = (Xmax - Xmin); 
-	static double Yrange = (Ymax - Ymin); 
-	static double Zrange = (Zmax - Zmin); 
-	
-	// keep cells away from the outer edge 
-	
-	if( setup_done == false )
-	{
-		Xmin += 0.1*Xrange; 
-		Ymin += 0.1*Yrange; 
-		Zmin = 0;
-		
-		Xrange *= 0.8;
-		Yrange *= 0.8;
-		Zrange = 0.0; 
-		setup_done = true; 
-	}
-	
-	std::vector<double> position = {0,0,0}; 
-	position[0] = Xmin + UniformRandom()*Xrange; 
-	position[1] = Ymin + UniformRandom()*Yrange; 
-	//position[2] = Zmin + UniformRandom()*Zrange; 
-		
 	Cell* pC = create_cell( *pCD ); 
+	
+	std::vector<double> position = choose_vascularized_position();
+	//pCell->set_position( position )
+
 	pC->assign_position( position );
 	
 	return; 
 }
 
+void create_infiltrating_immune_cell_initial( Cell_Definition* pCD )
+{
+	
+	Cell* pC = create_cell( *pCD ); 
+	
+	// randomly place macrophages intially
+	double Xmin = microenvironment.mesh.bounding_box[0]; 
+	double Ymin = microenvironment.mesh.bounding_box[1]; 
+	double Zmin = microenvironment.mesh.bounding_box[2]; 
+
+	double Xmax = microenvironment.mesh.bounding_box[3]; 
+	double Ymax = microenvironment.mesh.bounding_box[4]; 
+	double Zmax = microenvironment.mesh.bounding_box[5]; 
+	
+	if( default_microenvironment_options.simulate_2D == true )
+	{
+		Zmin = 0.0; 
+		Zmax = 0.0; 
+	}
+	
+	double Xrange = (Xmax - Xmin); 
+	double Yrange = (Ymax - Ymin); 
+	double Zrange = (Zmax - Zmin); 
+	
+	// keep cells away from the outer edge 
+	
+	Xmin += 0.1*Xrange; 
+	Ymin += 0.1*Yrange; 
+	Zmin = 0;
+	
+	Xrange *= 0.8;
+	Yrange *= 0.8;
+	Zrange = 0.0; 
+	
+	// create some of each type of cell 
+	
+	std::vector<double> position = {0,0,0}; 
+	position[0] = Xmin + UniformRandom()*Xrange; 
+	position[1] = Ymin + UniformRandom()*Yrange; 
+
+	pC->assign_position( position );
+	
+	return; 
+}
+
+std::vector<double> choose_vascularized_position( void )
+{
+	//extern std::vector<int> vascularized_voxel_indices;
+	int my_voxel_index = (int) ( UniformRandom() * (vascularized_voxel_indices.size()-1) );
+	int n = vascularized_voxel_indices[ my_voxel_index ] ; 
+	
+ return microenvironment.mesh.voxels[n].center; 
+}
+
 void create_infiltrating_immune_cell( std::string cell_name )
 {
 	create_infiltrating_immune_cell( find_cell_definition( cell_name ) ); 
+	
 	return;
 }
 
@@ -109,6 +149,17 @@ void create_infiltrating_neutrophil(void)
 		
 	pC = create_cell( get_cell_definition("neutrophil" ) ); 
 	pC->assign_position( position );
+	
+	static int proinflammatory_cytokine_index = microenvironment.find_density_index( "pro-inflammatory cytokine");
+	static int debris_index = microenvironment.find_density_index( "debris");
+	static int chemokine_index = microenvironment.find_density_index( "chemokine");
+			
+	pC->phenotype.secretion.uptake_rates[chemokine_index] = 
+		parameters.doubles("activated_cell_chemokine_uptake_rate"); // 10;
+	pC->phenotype.secretion.uptake_rates[proinflammatory_cytokine_index] = 
+		parameters.doubles("activated_cell_cytokine_uptake_rate"); // 10;
+	pC->phenotype.secretion.uptake_rates[debris_index] = 
+		parameters.doubles("activated_cell_chemokine_uptake_rate"); // 10;
 	
 	return;
 }
@@ -164,7 +215,17 @@ void create_infiltrating_Tcell(void)
 		
 	pC = create_cell( get_cell_definition("CD8 Tcell" ) ); 
 	pC->assign_position( position );
+		
+	static int proinflammatory_cytokine_index = microenvironment.find_density_index( "pro-inflammatory cytokine");
+	static int debris_index = microenvironment.find_density_index( "debris");
+	static int chemokine_index = microenvironment.find_density_index( "chemokine");
 	
+	pC->phenotype.secretion.uptake_rates[chemokine_index] = 
+		parameters.doubles("activated_cell_chemokine_uptake_rate"); // 10;
+	pC->phenotype.secretion.uptake_rates[proinflammatory_cytokine_index] = 
+		parameters.doubles("activated_cell_cytokine_uptake_rate"); // 10;
+	pC->phenotype.secretion.uptake_rates[debris_index] = 
+		parameters.doubles("activated_cell_chemokine_uptake_rate"); // 10;
 	return;
 }
 
@@ -254,6 +315,114 @@ void macrophage_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
 //	std::cout << __FUNCTION__ << " " << __LINE__ << std::endl; 
 	static int apoptosis_index = phenotype.death.find_death_model_index( "apoptosis" ); 
 	static Cell_Definition* pCD = find_cell_definition( "macrophage" ); 
+	static int proinflammatory_cytokine_index = microenvironment.find_density_index( "pro-inflammatory cytokine");
+	static int chemokine_index = microenvironment.find_density_index( "chemokine");
+	static int debris_index = microenvironment.find_density_index( "debris");
+			
+	// determine bias_direction for macrophage based on "eat me" signals and chemokine
+	double sensitivity_chemokine = parameters.doubles("sensitivity_to_chemokine_chemotaxis");
+	double sensitivity_eat_me = parameters.doubles("sensitivity_to_eat_me_chemotaxis");
+	pCell->phenotype.motility.migration_bias_direction = sensitivity_chemokine*pCell->nearest_gradient(chemokine_index)+sensitivity_eat_me*pCell->nearest_gradient(debris_index);
+	normalize( &( phenotype.motility.migration_bias_direction) );
+
+	// make changes to volume change rate??
+
+	// if too much debris, comit to apoptosis 	
+	
+//	std::cout << __FUNCTION__ << " " << __LINE__ << std::endl; 
+
+	double change_in_ingested_debris = ( phenotype.volume.total/pCD->phenotype.volume.total ); 
+	if( change_in_ingested_debris > pCell->custom_data[ "relative_maximum_volume" ] )
+	{
+		pCell->start_death( apoptosis_index ); 
+		pCell->phenotype.secretion.secretion_rates[proinflammatory_cytokine_index] = 0; 
+		pCell->phenotype.secretion.secretion_rates[debris_index] = parameters.doubles("debris_secretion_rate"); 
+		
+//		std::cout << " I ate to much and must therefore die " << std::endl; 
+//		system("pause"); 
+	}
+
+//	std::cout << __FUNCTION__ << " " << __LINE__ << std::endl; 
+
+	// check for cells to eat 
+	std::vector<Cell*> neighbors = pCell->cells_in_my_container(); 
+
+//	std::cout << __FUNCTION__ << " " << __LINE__ << std::endl; 
+	
+	// at least one of the cells is pCell 
+	if( neighbors.size() < 2 )
+	{ return; } 
+	
+//	std::cout << "\t\t" << __FUNCTION__ << " " << __LINE__ << std::endl; 
+	double macrophage_probability_of_phagocytosis = parameters.doubles("macrophage_probability_of_phagocytosis");
+
+	int n = 0; 
+	Cell* pTestCell = neighbors[n]; 
+//	std::cout << pCell << " vs " ; 
+	while( n < neighbors.size() )
+	{
+		pTestCell = neighbors[n]; 
+//		std::cout << pTestCell << " "; 
+		// if it is not me and not a macrophage 
+		if( pTestCell != pCell && pTestCell->phenotype.death.dead == true && 
+			pTestCell->phenotype.flagged_for_removal == false && UniformRandom()<macrophage_probability_of_phagocytosis)
+		{
+//			std::cout << std::endl; 
+//			std::cout << "\t\tnom nom nom" << std::endl; 
+//			std::cout << "\t\t\t" << pCell->type << " eats " << pTestCell->type << std::endl; 
+//			std::cout << "\t\t\t" << pCell  << " eats " << pTestCell << std::endl; 
+			pCell->ingest_cell( pTestCell ); 
+			
+			pCell->phenotype.secretion.secretion_rates[proinflammatory_cytokine_index] = 
+				parameters.doubles("activated_macrophage_secretion_rate"); // 10;
+			pCell->phenotype.secretion.uptake_rates[chemokine_index] = 
+				parameters.doubles("activated_cell_chemokine_uptake_rate"); // 10;
+			pCell->phenotype.secretion.uptake_rates[proinflammatory_cytokine_index] = 
+				parameters.doubles("activated_cell_cytokine_uptake_rate"); // 10;
+			pCell->phenotype.secretion.uptake_rates[debris_index] = 
+				parameters.doubles("activated_cell_chemokine_uptake_rate"); // 10;
+					
+      
+      // Paul M says: This should be read from a parameter value instead of hard-coded. 
+
+			pCell->phenotype.motility.migration_speed = 
+				parameters.doubles("activated_macrophage_speed"); 
+			
+//			system("pause");
+			return; 
+		}
+//		else
+//		{
+//			std::cout << " (" << (int) pTestCell->phenotype.death.dead << " " << 
+//			(int) pTestCell->phenotype.flagged_for_removal << ") " ; 
+//		}
+		
+		n++; 
+	}
+//	std::cout << " " << std::endl; 
+				
+	return; 
+}
+
+void macrophage_mechanics( Cell* pCell, Phenotype& phenotype, double dt )
+{
+	return; 
+}
+
+void neutrophil_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
+{
+	//	std::cout << __FUNCTION__ << " " << __LINE__ << std::endl; 
+	static int apoptosis_index = phenotype.death.find_death_model_index( "apoptosis" ); 
+	static Cell_Definition* pCD = find_cell_definition( "neutrophil" ); 
+	static int proinflammatory_cytokine_index = microenvironment.find_density_index( "pro-inflammatory cytokine");
+	static int debris_index = microenvironment.find_density_index( "debris" ); 
+	static int chemokine_index = microenvironment.find_density_index( "chemokine");
+			
+	// determine bias_direction for macrophage based on "eat me" signals and chemokine
+	double sensitivity_chemokine = parameters.doubles("sensitivity_to_chemokine_chemotaxis");
+	double sensitivity_eat_me = parameters.doubles("sensitivity_to_eat_me_chemotaxis");
+	pCell->phenotype.motility.migration_bias_direction = sensitivity_chemokine*pCell->nearest_gradient(chemokine_index)+sensitivity_eat_me*pCell->nearest_gradient(debris_index);
+	normalize( &( phenotype.motility.migration_bias_direction) );
 	
 	// make changes to volume change rate??
 
@@ -261,10 +430,13 @@ void macrophage_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
 	
 //	std::cout << __FUNCTION__ << " " << __LINE__ << std::endl; 
 
-	double ingested_debris = ( phenotype.volume.total - pCD->phenotype.volume.total ); 
-	if( ingested_debris > pCell->custom_data[ "maximum_tolerated_ingested_debris" ] )
+	double change_in_ingested_debris = ( phenotype.volume.total/pCD->phenotype.volume.total ); 
+	if( change_in_ingested_debris > pCell->custom_data[ "relative_maximum_volume" ] )
 	{
 		pCell->start_death( apoptosis_index ); 
+		pCell->phenotype.secretion.secretion_rates[proinflammatory_cytokine_index] = 0; 
+		pCell->phenotype.secretion.secretion_rates[debris_index] = parameters.doubles("debris_secretion_rate"); 
+		
 //		std::cout << " I ate to much and must therefore die " << std::endl; 
 //		system("pause"); 
 	}
@@ -285,13 +457,16 @@ void macrophage_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
 	int n = 0; 
 	Cell* pTestCell = neighbors[n]; 
 //	std::cout << pCell << " vs " ; 
+
+	double neutrophil_probability_of_phagocytosis = parameters.doubles("neutrophil_probability_of_phagocytosis");
+
 	while( n < neighbors.size() )
 	{
 		pTestCell = neighbors[n]; 
 //		std::cout << pTestCell << " "; 
 		// if it is not me and not a macrophage 
 		if( pTestCell != pCell && pTestCell->phenotype.death.dead == true && 
-			pTestCell->phenotype.flagged_for_removal == false )
+			pTestCell->phenotype.flagged_for_removal == false && UniformRandom()<neutrophil_probability_of_phagocytosis)
 		{
 //			std::cout << std::endl; 
 //			std::cout << "\t\tnom nom nom" << std::endl; 
@@ -300,14 +475,23 @@ void macrophage_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
 			pCell->ingest_cell( pTestCell ); 
 			
 			static int proinflammatory_cytokine_index = microenvironment.find_density_index( "pro-inflammatory cytokine");
+			static int chemokine_index = microenvironment.find_density_index( "chemokine");
 			
-			phenotype.secretion.secretion_rates[proinflammatory_cytokine_index] = 
-				pCell->custom_data["activated_macrophage_secretion_rate"]; // 10;
+			pCell->phenotype.secretion.secretion_rates[proinflammatory_cytokine_index] = 
+				parameters.doubles("activated_macrophage_secretion_rate"); // 10;
+			pCell->phenotype.secretion.uptake_rates[chemokine_index] = 
+				parameters.doubles("activated_cell_chemokine_uptake_rate"); // 10;
+			pCell->phenotype.secretion.uptake_rates[proinflammatory_cytokine_index] = 
+				parameters.doubles("activated_cell_cytokine_uptake_rate"); // 10;
+			pCell->phenotype.secretion.uptake_rates[debris_index] = 
+				parameters.doubles("activated_cell_chemokine_uptake_rate"); // 10;
+				
+					
       
       // Paul M says: This should be read from a parameter value instead of hard-coded. 
 
-			phenotype.motility.migration_speed = 
-				pCell->custom_data[ "activated_macrophage_speed" ]; 
+			pCell->phenotype.motility.migration_speed = 
+				parameters.doubles("activated_neutrophil_speed" ); 
 			
 //			system("pause");
 			return; 
@@ -322,16 +506,10 @@ void macrophage_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
 	}
 //	std::cout << " " << std::endl; 
 	
-	return; 
-}
-
-void macrophage_mechanics( Cell* pCell, Phenotype& phenotype, double dt )
-{
-	return; 
-}
-
-void neutrophil_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
-{
+	// if neutrophil isn't killing any cell then return to normal speed
+	pCell->phenotype.motility.migration_speed = 
+		parameters.doubles("normal_neutrophil_speed"); 
+				
 	return; 
 }
 
@@ -580,6 +758,9 @@ Cell* immune_cell_check_neighbors_for_attachment( Cell* pAttacker , double dt )
 void TCell_induced_apoptosis( Cell* pCell, Phenotype& phenotype, double dt )
 {
 	static int apoptosis_index = phenotype.death.find_death_model_index( "apoptosis" ); 
+	static int debris_index = microenvironment.find_density_index( "debris" ); 
+	static int proinflammatory_cytokine_index = microenvironment.find_density_index("pro-inflammatory cytokine");
+	
 	if( pCell->custom_data["TCell_contact_time"] > pCell->custom_data["TCell_contact_death_threshold"] )
 	{
 		// std::cout << "I die now" << std::endl; 
@@ -592,6 +773,8 @@ void TCell_induced_apoptosis( Cell* pCell, Phenotype& phenotype, double dt )
 		}
 		
 		pCell->start_death( apoptosis_index ); 
+		pCell->phenotype.secretion.secretion_rates[proinflammatory_cytokine_index] = 0; 
+		pCell->phenotype.secretion.secretion_rates[debris_index] = parameters.doubles("debris_secretion_rate"); 
 		pCell->functions.update_phenotype = NULL; 
 	}
 	
@@ -614,6 +797,7 @@ void immune_cell_recruitment( double dt )
 	if( t_immune > t_next_immune- tolerance )
 	{
 		double elapsed_time = (t_immune - t_last_immune );
+//		std::cout<<"t immune: "<<t_immune<<" elapsed time "<<elapsed_time<<std::endl;
 //		std::cout << "Immune time! " << t_immune << " (elapsed: " << elapsed_time << ") " << std::endl; 
 		
 		// neutrophil recruitment 
@@ -703,9 +887,12 @@ void immune_cell_recruitment( double dt )
 		t_last_immune = t_immune; 
 		t_next_immune = t_immune + dt_immune; 
 		
-		std::cout << "\t\tnext immune time: " << t_next_immune << std::endl;  
+//		std::cout << "\t\tnext immune time: " << t_next_immune << std::endl;  
+		
+//		std::cout<<"t immune: "<<t_immune<<" elapsed time "<<elapsed_time<<std::endl;
 	}
 	t_immune += dt; 
+	
 	return; 
 }
 
@@ -721,10 +908,9 @@ void initial_immune_cell_placement( void )
 
 	// macrophages 
 	for( int n = 0 ; n < parameters.ints("number_of_macrophages") ; n++ )
-	{ create_infiltrating_immune_cell( pMF ); }		
+	{ create_infiltrating_immune_cell_initial( pMF ); }		
 
-	// neutrophils 
-	for( int n = 0 ; n < parameters.ints("number_of_neutrophils") ; n++ )
+	// neutrophils 	for( int n = 0 ; n < parameters.ints("number_of_neutrophils") ; n++ )
 	{ create_infiltrating_immune_cell( pN ); }		
 
 	return;

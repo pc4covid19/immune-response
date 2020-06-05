@@ -71,6 +71,7 @@
 
 Cell_Definition motile_cell; 
 
+
 void create_cell_types( void )
 {
 	// set the random seed 
@@ -183,6 +184,7 @@ void setup_tissue( void )
 	
 	Cell* pC;
 	
+		
 	// uninfected cells
 	for( int n = 0 ; n < parameters.ints("number_of_uninfected_cells") ; n++ )
 	{
@@ -198,6 +200,7 @@ void setup_tissue( void )
 		pC->functions.custom_cell_rule = extra_elastic_attachment_mechanics; 
 	}
 
+	
 	// infected cells, which secrete chemokine 
 	int chemokine_index = microenvironment.find_density_index( "chemokine" ); 
 	for( int n = 0 ; n < parameters.ints("number_of_infected_cells") ; n++ )
@@ -210,13 +213,19 @@ void setup_tissue( void )
 		pC = create_cell( get_cell_definition("lung epithelium" ) ); 
 		pC->assign_position( position );
 		
-		pC->custom_data["assembled_virion"] = 1000.0; 
-		pC->phenotype.secretion.secretion_rates[chemokine_index] = 10.0; 
-		pC->phenotype.secretion.saturation_densities[chemokine_index] = 1.0; 
+		pC->custom_data["viral_protein"] = 1000.0*UniformRandom(); 
+		pC->custom_data["assembled_virion"] = 1000.0*UniformRandom(); 
 		
+		// infected cells secrete chemokine at a rate proportional to the amount of viral protein
+		if(pC->custom_data["viral_protein"]/parameters.doubles("max_apoptosis_half_max")>1)
+		{pC->phenotype.secretion.secretion_rates[chemokine_index] = parameters.doubles("infected_cell_chemokine_secretion_rate")*(pC->custom_data["viral_protein"]/parameters.doubles("max_apoptosis_half_max"));}	
+		else
+		{pC->phenotype.secretion.secretion_rates[chemokine_index] = parameters.doubles("infected_cell_chemokine_secretion_rate")*1;}
+		pC->phenotype.secretion.saturation_densities[chemokine_index] = 1.0; 
 		pC->functions.update_phenotype = TCell_induced_apoptosis; 
 		pC->functions.custom_cell_rule = extra_elastic_attachment_mechanics; 
 	}
+	
 	
 	// dead infected cell 
 	int death_index = pC->phenotype.death.find_death_model_index( "apoptosis" ); 
@@ -233,11 +242,12 @@ void setup_tissue( void )
 		pC->custom_data["assembled_virion"] = 1000.0; 
 		pC->start_death( death_index ); 		
 	}	
-
 	initial_immune_cell_placement(); 
+	
 	
 	return; 
 }
+
 
 std::string blue_yellow_interpolation( double min, double val, double max )
 {

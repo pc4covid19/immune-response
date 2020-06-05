@@ -87,9 +87,11 @@ void setup_microenvironment( void );
 void create_infiltrating_neutrophil(void);
 void create_infiltrating_Tcell(void);
 
+
 std::string blue_yellow_interpolation( double min, double val, double max ); 
 
 std::vector<std::string> immune_coloring_function( Cell* );
+
 
 // custom functions can go here 
 

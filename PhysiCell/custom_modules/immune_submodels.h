@@ -27,7 +27,12 @@ void extra_elastic_attachment_mechanics( Cell* pCell, Phenotype& phenotype, doub
 void attach_cells( Cell* pCell_1, Cell* pCell_2 );
 void detach_cells( Cell* pCell_1 , Cell* pCell_2 );
 
+std::vector<double> choose_vascularized_position( void );
 
+//void choose_initialized_voxels( void );
+//extern std::vector<int> vascularized_voxel_indices;
+extern std::vector<int> vascularized_voxel_indices;
+void choose_initialized_voxels( void );
 
 void CD8_Tcell_phenotype( Cell* pCell, Phenotype& phenotype, double dt ); 
 void CD8_Tcell_mechanics( Cell* pCell, Phenotype& phenotype, double dt ); 
@@ -42,8 +47,18 @@ void neutrophil_mechanics( Cell* pCell, Phenotype& phenotype, double dt );
 // this damage response will need to be added to the "infected cell response" model 
 void TCell_induced_apoptosis( Cell* pCell, Phenotype& phenotype, double dt ); 
 
+// immune cell recruitment 
 
+void create_infiltrating_immune_cell( Cell_Definition* pCD );
+void create_infiltrating_immune_cell( std::string cell_name );
+void create_infiltrating_immune_cell_initial( Cell_Definition* pCD );
 
+void create_infiltrating_Tcell( void ); 
+void create_infiltrating_neutrophil( void );
+
+void immune_cell_recruitment( double dt ); 
+
+void initial_immune_cell_placement( void ); 
 
 void immune_submodels_setup( void ); 
 

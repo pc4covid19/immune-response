@@ -105,6 +105,7 @@ int main( int argc, char* argv[] )
 	
 	setup_microenvironment(); // modify this in the custom code 
 	
+	choose_initialized_voxels();
 	/* PhysiCell setup */ 
  	
 	// set mechanics voxel size, and match the data structure to BioFVM
@@ -116,6 +117,7 @@ int main( int argc, char* argv[] )
 	create_cell_types();
 	
 	setup_tissue();
+	
 
 	/* Users typically stop modifying here. END USERMODS */ 
 	
@@ -202,12 +204,14 @@ int main( int argc, char* argv[] )
 			// update the microenvironment
 			microenvironment.simulate_diffusion_decay( diffusion_dt );
 			
-			// run PhysiCell 
+			// run PhysiCell 			
 			((Cell_Container *)microenvironment.agent_container)->update_all_cells( PhysiCell_globals.current_time );
 			
 			/*
 			  Custom add-ons could potentially go here. 
 			*/
+			
+			immune_cell_recruitment( diffusion_dt ); 
 			
 			PhysiCell_globals.current_time += diffusion_dt;
 		}

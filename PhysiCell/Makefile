@@ -147,7 +147,7 @@ immune_submodels.o: ./custom_modules/immune_submodels.cpp
 	$(COMPILE_COMMAND) -c ./custom_modules/immune_submodels.cpp 
 
 # cleanup
-	
+
 clean:
 	rm -f *.o
 	rm -f $(PROGRAM_NAME)*

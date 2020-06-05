@@ -84,10 +84,14 @@ void setup_tissue( void );
 void setup_microenvironment( void ); 
 
 // custom pathology coloring function 
+void create_infiltrating_neutrophil(void);
+void create_infiltrating_Tcell(void);
+
 
 std::string blue_yellow_interpolation( double min, double val, double max ); 
 
 std::vector<std::string> immune_coloring_function( Cell* );
+
 
 // custom functions can go here 
 

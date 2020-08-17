@@ -67,11 +67,6 @@
 
 #include "./custom.h"
 
-// declare cell definitions here 
-
-Cell_Definition motile_cell; 
-
-
 void create_cell_types( void )
 {
 	// set the random seed 
@@ -83,23 +78,25 @@ void create_cell_types( void )
 	   
 	   This is a good place to set default functions. 
 	*/ 
-	
 	cell_defaults.functions.volume_update_function = standard_volume_update_function;
 	cell_defaults.functions.update_velocity = standard_update_cell_velocity;
 
 	cell_defaults.functions.update_migration_bias = NULL; 
-	cell_defaults.functions.update_phenotype = NULL; // update_cell_and_death_parameters_O2_based; 
+	cell_defaults.functions.update_phenotype = NULL;  
 	cell_defaults.functions.custom_cell_rule = NULL; 
 	
 	cell_defaults.functions.add_cell_basement_membrane_interactions = NULL; 
 	cell_defaults.functions.calculate_distance_to_membrane = NULL; 
+	
+	int virion_index = microenvironment.find_density_index( "virion" ); 
+	int assembled_virion_index = microenvironment.find_density_index( "assembled virion" );
 	
 	/*
 	   This parses the cell definitions in the XML config file. 
 	*/
 	
 	initialize_cell_definitions_from_pugixml(); 
-	
+
 	/* 
 	   Put any modifications to individual cell definitions here. 
 	   
@@ -109,22 +106,19 @@ void create_cell_types( void )
 	// register the submodels 
 	// (which ensures that the cells have all the internal variables they need) 
 	
-	//receptor_dynamics_model_setup(); 
-	//internal_virus_model_setup();
-	//internal_virus_response_model_setup();
+	Cell_Definition* pCD = find_cell_definition( "lung epithelium" ); 
+	pCD->phenotype.molecular.fraction_released_at_death[virion_index] = 
+		parameters.doubles("virus_fraction_released_at_death"); 
+	pCD->phenotype.molecular.fraction_released_at_death[assembled_virion_index] = 
+		parameters.doubles("virus_fraction_released_at_death"); 
+
 	immune_submodels_setup();
-	submodel_registry.display( std::cout ); 	
-	
-/*	
-	if( parameters.bools("predators_eat_prey") == true )
-	{ get_cell_definition("predator").functions.custom_cell_rule = predator_hunting_function; }
+	// receptor_dynamics_model_setup(); 
+	// internal_virus_model_setup();
+	// internal_virus_response_model_setup();
+	epithelium_submodel_setup(); 
 
-	if( parameters.bools("predators_cycle_if_big") == true )
-	{ get_cell_definition("predator").functions.update_phenotype = predator_cycling_function; }
-
-	if( parameters.bools("prey_quorom_effect") == true )
-	{ get_cell_definition("prey").functions.update_phenotype = prey_cycling_function; }
-*/
+	submodel_registry.display( std::cout ); 
 		
 	/*
 	   This builds the map of cell definitions and summarizes the setup. 
@@ -140,6 +134,36 @@ void setup_microenvironment( void )
 {
 	// set domain parameters 
 	
+/* now this is in XML 
+	default_microenvironment_options.X_range = {-1000, 1000}; 
+	default_microenvironment_options.Y_range = {-1000, 1000}; 
+	default_microenvironment_options.simulate_2D = true; 
+*/
+	
+	// make sure to override and go back to 2D 
+	if( default_microenvironment_options.simulate_2D == false )
+	{
+		std::cout << "Warning: overriding XML config option and setting to 2D!" << std::endl; 
+		default_microenvironment_options.simulate_2D = true; 
+	}
+	
+/* now this is in XML 	
+	// no gradients need for this example 
+
+	default_microenvironment_options.calculate_gradients = false; 
+	
+	// set Dirichlet conditions 
+
+	default_microenvironment_options.outer_Dirichlet_conditions = true;
+	
+	// if there are more substrates, resize accordingly 
+	std::vector<double> bc_vector( 1 , 38.0 ); // 5% o2
+	default_microenvironment_options.Dirichlet_condition_vector = bc_vector;
+	
+	// set initial conditions 
+	default_microenvironment_options.initial_condition_vector = { 38.0 }; 
+*/
+	
 	// put any custom code to set non-homogeneous initial conditions or 
 	// extra Dirichlet nodes here. 
 	
@@ -152,102 +176,161 @@ void setup_microenvironment( void )
 
 void setup_tissue( void )
 {
-	double Xmin = microenvironment.mesh.bounding_box[0]; 
-	double Ymin = microenvironment.mesh.bounding_box[1]; 
-	double Zmin = microenvironment.mesh.bounding_box[2]; 
-
-	double Xmax = microenvironment.mesh.bounding_box[3]; 
-	double Ymax = microenvironment.mesh.bounding_box[4]; 
-	double Zmax = microenvironment.mesh.bounding_box[5]; 
+	static int nV = microenvironment.find_density_index( "virion" ); 
 	
-	if( default_microenvironment_options.simulate_2D == true )
-	{
-		Zmin = 0.0; 
-		Zmax = 0.0; 
-	}
+	choose_initialized_voxels();
 	
-	double Xrange = (Xmax - Xmin); 
-	double Yrange = (Ymax - Ymin); 
-	double Zrange = (Zmax - Zmin); 
-	
-	// keep cells away from the outer edge 
-	
-	Xmin += 0.1*Xrange; 
-	Ymin += 0.1*Yrange; 
-	Zmin = 0;
-	
-	Xrange *= 0.8;
-	Yrange *= 0.8;
-	Zrange = 0.0; 
-	
-	// create some of each type of cell 
+	// create some cells near the origin
 	
 	Cell* pC;
 	
-		
-	// uninfected cells
-	for( int n = 0 ; n < parameters.ints("number_of_uninfected_cells") ; n++ )
-	{
-		std::vector<double> position = {0,0,0}; 
-		position[0] = Xmin + UniformRandom()*Xrange; 
-		position[1] = Ymin + UniformRandom()*Yrange; 
-		//position[2] = Zmin + UniformRandom()*Zrange; 
-		
-		pC = create_cell( get_cell_definition("lung epithelium" ) ); 
-		pC->assign_position( position );
-		
-		pC->functions.update_phenotype = TCell_induced_apoptosis; 
-		pC->functions.custom_cell_rule = extra_elastic_attachment_mechanics; 
-	}
+	// hexagonal cell packing 
+	Cell_Definition* pCD = find_cell_definition("lung epithelium"); 
+	
+	double cell_radius = pCD->phenotype.geometry.radius; 
+	double spacing = 0.95 * cell_radius * 2.0; 
+	
+	double x_min = microenvironment.mesh.bounding_box[0] + cell_radius; 
+	double x_max = microenvironment.mesh.bounding_box[3] - cell_radius; 
 
+	double y_min = microenvironment.mesh.bounding_box[1] + cell_radius; 
+	double y_max = microenvironment.mesh.bounding_box[4] - cell_radius; 
 	
-	// infected cells, which secrete chemokine 
-	int chemokine_index = microenvironment.find_density_index( "chemokine" ); 
-	for( int n = 0 ; n < parameters.ints("number_of_infected_cells") ; n++ )
+	double x = x_min; 
+	double y = y_min; 
+	
+	double center_x = 0.5*( x_min + x_max ); 
+	double center_y = 0.5*( y_min + y_max ); 
+	
+	double triangle_stagger = sqrt(3.0) * spacing * 0.5; 
+	
+	// find hte cell nearest to the center 
+	double nearest_distance_squared = 9e99; 
+	Cell* pNearestCell = NULL; 
+	
+	int n = 0; 
+	while( y < y_max )
 	{
-		std::vector<double> position = {0,0,0}; 
-		position[0] = Xmin + UniformRandom()*Xrange; 
-		position[1] = Ymin + UniformRandom()*Yrange; 
-		//position[2] = Zmin + UniformRandom()*Zrange; 
+		while( x < x_max )
+		{
+			pC = create_cell( get_cell_definition("lung epithelium" ) ); 
+			pC->assign_position( x,y, 0.0 );
+			
+			double dx = x - center_x;
+			double dy = y - center_y; 
+			
+			double temp = dx*dx + dy*dy; 
+			if( temp < nearest_distance_squared )
+			{
+				nearest_distance_squared = temp;
+				pNearestCell = pC; 
+			}
+			x += spacing; 
+		}
+		x = x_min; 
 		
-		pC = create_cell( get_cell_definition("lung epithelium" ) ); 
-		pC->assign_position( position );
-		
-		pC->custom_data["viral_protein"] = 1000.0*UniformRandom(); 
-		pC->custom_data["assembled_virion"] = 1000.0*UniformRandom(); 
-		
-		// infected cells secrete chemokine at a rate proportional to the amount of viral protein
-		if(pC->custom_data["viral_protein"]/parameters.doubles("max_apoptosis_half_max")>1)
-		{pC->phenotype.secretion.secretion_rates[chemokine_index] = parameters.doubles("infected_cell_chemokine_secretion_rate")*(pC->custom_data["viral_protein"]/parameters.doubles("max_apoptosis_half_max"));}	
-		else
-		{pC->phenotype.secretion.secretion_rates[chemokine_index] = parameters.doubles("infected_cell_chemokine_secretion_rate")*1;}
-		pC->phenotype.secretion.saturation_densities[chemokine_index] = 1.0; 
-		pC->functions.update_phenotype = TCell_induced_apoptosis; 
-		pC->functions.custom_cell_rule = extra_elastic_attachment_mechanics; 
+		n++; 
+		y += triangle_stagger; 
+		// in odd rows, shift 
+		if( n % 2 == 1 )
+		{
+			x += 0.5 * spacing; 
+		}
 	}
 	
+	int number_of_virions = (int) ( parameters.doubles("multiplicity_of_infection") * 
+		(*all_cells).size() ); 
+	double single_virion_density_change = 1.0 / microenvironment.mesh.dV; 
 	
-	// dead infected cell 
-	int death_index = pC->phenotype.death.find_death_model_index( "apoptosis" ); 
-	for( int n = 0 ; n < parameters.ints("number_of_dead_cells") ; n++ )
+	// infect the cell closest to the center  
+
+	if( parameters.bools( "use_single_infected_cell" ) == true )
 	{
-		std::vector<double> position = {0,0,0}; 
-		position[0] = Xmin + UniformRandom()*Xrange; 
-		position[1] = Ymin + UniformRandom()*Yrange; 
-		//position[2] = Zmin + UniformRandom()*Zrange; 
-		
-		pC = create_cell( get_cell_definition("lung epithelium" ) ); 
-		pC->assign_position( position );
-		
-		pC->custom_data["assembled_virion"] = 1000.0; 
-		pC->start_death( death_index ); 		
-	}	
-	initial_immune_cell_placement(); 
+		std::cout << "Infecting center cell with one virion ... " << std::endl; 
+		pNearestCell->phenotype.molecular.internalized_total_substrates[ nV ] = 1.0; 
+	}
+	else
+	{
+		std::cout << "Placing " << number_of_virions << " virions ... " << std::endl; 
+		for( int n=0 ; n < number_of_virions ; n++ )
+		{
+			// pick a random voxel 
+			std::vector<double> position = {0,0,0}; 
+			position[0] = x_min + (x_max-x_min)*UniformRandom(); 
+			position[1] = y_min + (y_max-y_min)*UniformRandom(); 
+			
+			int m = microenvironment.nearest_voxel_index( position ); 
+			
+			// int n = (int) ( ( microenvironment.number_of_voxels()-1.0 ) * UniformRandom() ); 
+			// microenvironment(i,j)[nV] += single_virion_density_change; 
+			microenvironment(m)[nV] += single_virion_density_change; 
+		}
+	}
 	
+	// now place immune cells 
+	
+	initial_immune_cell_placement();
 	
 	return; 
 }
 
+std::vector<std::string> epithelium_coloring_function( Cell* pCell )
+{
+	std::vector<std::string> output( 4, "black" ); 
+
+	// static int color_index = cell_defaults.custom_data.find_variable_index( "assembled virion" ); 
+	static int color_index = 
+		cell_defaults.custom_data.find_variable_index( parameters.strings["color_variable"].value ); 
+	static int nV = cell_defaults.custom_data.find_variable_index( "virion" ); 
+	
+	// color by assembled virion 
+	
+	if( pCell->phenotype.death.dead == false )
+	{
+		// find fraction of max viral load 
+		double v = pCell->custom_data[ color_index ] ; 
+		
+		double interpolation = 0; 
+		if( v < 1 )
+		{ interpolation = 0; } 
+		if( v >= 1.0 && v < 10 )
+		{ interpolation = 0.25; } 
+		if( v >= 10.0 && v < 100 )
+		{ interpolation = 0.5; } 
+		if( v >= 100.0 && v < 1000 )
+		{ interpolation = 0.75; } 
+		if( v >= 1000.0 )
+		{ interpolation = 1.0; } 
+
+		int red = (int) floor( 255.0 * interpolation ) ; 
+		int green = red; 
+		int blue = 255 - red; 
+
+		char color [1024]; 
+		sprintf( color, "rgb(%u,%u,%u)" , red,green,blue ); 
+
+		output[0] = color; 
+		output[2] = color; 
+		output[3] = color; 
+	}
+	
+	return output; 
+}
+
+void move_exported_to_viral_field( void )
+{
+	static int nV = microenvironment.find_density_index( "virion" ); 
+	static int nA = microenvironment.find_density_index( "assembled virion" ); 
+	
+	#pragma omp parallel for 
+	for( int n = 0 ; n < microenvironment.number_of_voxels() ; n++ )
+	{
+		microenvironment(n)[nV] += microenvironment(n)[nA]; 
+		microenvironment(n)[nA] = 0; 
+	}
+	
+	return;
+}
 
 std::string blue_yellow_interpolation( double min, double val, double max )
 {
@@ -267,14 +350,16 @@ std::string blue_yellow_interpolation( double min, double val, double max )
 	return color;  
 }
 
-std::vector<std::string> immune_coloring_function( Cell* pCell )
+std::vector<std::string> tissue_coloring_function( Cell* pCell )
 {
 	static int lung_epithelial_type = get_cell_definition( "lung epithelium" ).type; 
+	
 	static int CD8_Tcell_type = get_cell_definition( "CD8 Tcell" ).type; 
 	static int Macrophage_type = get_cell_definition( "macrophage" ).type; 
 	static int Neutrophil_type = get_cell_definition( "neutrophil" ).type; 
+	static int DC_type = get_cell_definition( "DC" ).type; 
 	
-	// start with flow cytometry coloring 
+	// start with white 
 	
 	std::vector<std::string> output = {"white", "black", "white" , "white" };	
 	// false_cell_coloring_cytometry(pCell); 
@@ -290,100 +375,337 @@ std::vector<std::string> immune_coloring_function( Cell* pCell )
 		}
 
 		output[0] = parameters.strings("apoptotic_epithelium_color");	
-		output[2] = output[0]; 		
-		output[3] = output[0]; 		
+		output[2] = output[0];
+		output[3] = output[0];
 		return output; 
 	}
 
 	if( pCell->phenotype.death.dead == false && pCell->type == lung_epithelial_type )
 	{
 		// color by virion 
-		std::string color = blue_yellow_interpolation( 0.0 , pCell->custom_data["assembled_virion"] , 1000.0 ); 
-		output[0] = color;   
-		output[2] = color; 
-		output[3] = color; 
+		output = epithelium_coloring_function(pCell); 
 		return output; 
 	}
 	
 	if( pCell->phenotype.death.dead == false && pCell->type == CD8_Tcell_type )
 	{
 		output[0] = parameters.strings("CD8_Tcell_color");  
-		output[2] = parameters.strings("CD8_Tcell_color");  
-		output[3] = parameters.strings("CD8_Tcell_color"); 
+		output[2] = output[0];
+		output[3] = output[0];
 		return output; 
 	}
 
 	if( pCell->phenotype.death.dead == false && pCell->type == Macrophage_type )
 	{
-		output[0] = parameters.strings("Macrophage_color");  
-		output[2] = parameters.strings("Macrophage_color");  
-		output[3] = parameters.strings("Macrophage_color"); 
+		std::string color = parameters.strings("Macrophage_color");  
+		if( pCell->custom_data["activated_immune_cell" ] > 0.5 )
+		{ color = parameters.strings("activated_macrophage_color"); }
+	if( pCell->phenotype.volume.total> pCell->custom_data["threshold_macrophage_volume"] )// macrophage exhausted
+		{ color = parameters.strings("exhausted_macrophage_color"); }
+		
+		output[0] = color; 
+		output[2] = output[0];
+		output[3] = output[0];
 		return output; 
 	}
 
 	if( pCell->phenotype.death.dead == false && pCell->type == Neutrophil_type )
 	{
 		output[0] = parameters.strings("Neutrophil_color");  
-		output[2] = parameters.strings("Neutrophil_color");  
-		output[3] = parameters.strings("Neutrophil_color");  
+		output[2] = output[0];
+		output[3] = output[0];
+		return output; 
+	}
+	
+	if( pCell->phenotype.death.dead == false && pCell->type == DC_type )
+	{
+		output[0] = parameters.strings("DC_color");  
+		output[2] = output[0];
+		output[3] = output[0];
 		return output; 
 	}
 
 	return output; 
 }
 
-/*
-void predator_hunting_function( Cell* pCell, Phenotype& phenotype, double dt )
+bool Write_SVG_circle_opacity( std::ostream& os, double center_x, double center_y, double radius, double stroke_size, 
+                       std::string stroke_color , std::string fill_color , double opacity )
 {
-	Cell* pTestCell = NULL; 
+ os << "  <circle cx=\"" << center_x << "\" cy=\"" << center_y << "\" r=\"" << radius << "\" stroke-width=\"" << stroke_size 
+    << "\" stroke=\"" << stroke_color << "\" fill=\"" << fill_color 
+	<< "\" fill-opacity=\"" << opacity << "\"/>" << std::endl; 
+ return true; 
+}
+
+
+//
+void SVG_plot_virus( std::string filename , Microenvironment& M, double z_slice , double time, std::vector<std::string> (*cell_coloring_function)(Cell*) )
+{
+	double X_lower = M.mesh.bounding_box[0];
+	double X_upper = M.mesh.bounding_box[3];
+ 
+	double Y_lower = M.mesh.bounding_box[1]; 
+	double Y_upper = M.mesh.bounding_box[4]; 
+
+	double plot_width = X_upper - X_lower; 
+	double plot_height = Y_upper - Y_lower; 
+
+	double font_size = 0.025 * plot_height; // PhysiCell_SVG_options.font_size; 
+	double top_margin = font_size*(.2+1+.2+.9+.5 ); 
+
+	// open the file, write a basic "header"
+	std::ofstream os( filename , std::ios::out );
+	if( os.fail() )
+	{ 
+		std::cout << std::endl << "Error: Failed to open " << filename << " for SVG writing." << std::endl << std::endl; 
+
+		std::cout << std::endl << "Error: We're not writing data like we expect. " << std::endl
+		<< "Check to make sure your save directory exists. " << std::endl << std::endl
+		<< "I'm going to exit with a crash code of -1 now until " << std::endl 
+		<< "you fix your directory. Sorry!" << std::endl << std::endl; 
+		exit(-1); 
+	} 
 	
-	double sated_volume = pCell->parameters.pReference_live_phenotype->volume.total * 
-		parameters.doubles("relative_sated_volume" ); 
+	Write_SVG_start( os, plot_width , plot_height + top_margin );
+
+	// draw the background 
+	Write_SVG_rect( os , 0 , 0 , plot_width, plot_height + top_margin , 0.002 * plot_height , "white", "white" );
+
+	// write the simulation time to the top of the plot
+ 
+	char* szString; 
+	szString = new char [1024]; 
+ 
+	int total_cell_count = all_cells->size(); 
+ 
+	double temp_time = time; 
+
+	std::string time_label = formatted_minutes_to_DDHHMM( temp_time ); 
+ 
+	sprintf( szString , "Current time: %s, z = %3.2f %s", time_label.c_str(), 
+		z_slice , PhysiCell_SVG_options.simulation_space_units.c_str() ); 
+	Write_SVG_text( os, szString, font_size*0.5,  font_size*(.2+1), 
+		font_size, PhysiCell_SVG_options.font_color.c_str() , PhysiCell_SVG_options.font.c_str() );
+	sprintf( szString , "%u agents" , total_cell_count ); 
+	Write_SVG_text( os, szString, font_size*0.5,  font_size*(.2+1+.2+.9), 
+		0.95*font_size, PhysiCell_SVG_options.font_color.c_str() , PhysiCell_SVG_options.font.c_str() );
 	
-	for( int n=0; n < pCell->cells_in_my_container().size() ; n++ )
+	delete [] szString; 
+
+
+	// add an outer "g" for coordinate transforms 
+	
+	os << " <g id=\"tissue\" " << std::endl 
+	   << "    transform=\"translate(0," << plot_height+top_margin << ") scale(1,-1)\">" << std::endl; 
+	   
+	// prepare to do mesh-based plot (later)
+	
+	double dx_stroma = M.mesh.dx; 
+	double dy_stroma = M.mesh.dy; 
+	
+	os << "  <g id=\"ECM\">" << std::endl; 
+  
+	int ratio = 1; 
+	double voxel_size = dx_stroma / (double) ratio ; 
+  
+	double half_voxel_size = voxel_size / 2.0; 
+	double normalizer = 78.539816339744831 / (voxel_size*voxel_size*voxel_size); 
+ 
+ // color in the background ECM
+/* 
+ if( ECM.TellRows() > 0 )
+ {
+  // find the k corresponding to z_slice
+  
+  
+  
+  Vector position; 
+  *position(2) = z_slice; 
+  
+
+  // 25*pi* 5 microns^2 * length (in source) / voxelsize^3
+  
+  for( int j=0; j < ratio*ECM.TellCols() ; j++ )
+  {
+   // *position(1) = *Y_environment(j); 
+   *position(1) = *Y_environment(0) - dy_stroma/2.0 + j*voxel_size + half_voxel_size; 
+   
+   for( int i=0; i < ratio*ECM.TellRows() ; i++ )
+   {
+    // *position(0) = *X_environment(i); 
+    *position(0) = *X_environment(0) - dx_stroma/2.0 + i*voxel_size + half_voxel_size; 
+	
+    double E = evaluate_Matrix3( ECM, X_environment , Y_environment, Z_environment , position );	
+	double BV = normalizer * evaluate_Matrix3( OxygenSourceHD, X_environment , Y_environment, Z_environment , position );
+	if( isnan( BV ) )
+	{ BV = 0.0; }
+
+	vector<string> Colors;
+	Colors = hematoxylin_and_eosin_stroma_coloring( E , BV );
+	Write_SVG_rect( os , *position(0)-half_voxel_size-X_lower , *position(1)-half_voxel_size+top_margin-Y_lower, 
+	voxel_size , voxel_size , 1 , Colors[0], Colors[0] );
+   
+   }
+  }
+ 
+ }
+*/
+	os << "  </g>" << std::endl; 
+	
+	static Cell_Definition* pEpithelial = find_cell_definition( "lung epithelium" ); 
+ 
+	// plot intersecting epithelial cells 
+	os << "  <g id=\"cells\">" << std::endl; 
+	for( int i=0 ; i < total_cell_count ; i++ )
 	{
-		pTestCell = pCell->cells_in_my_container()[n]; 
-		// if it's not me, not dead, and not my type, eat it 
-		
-		if( pTestCell != pCell && pTestCell->type != pCell->type && pTestCell->phenotype.death.dead == false )
+		Cell* pC = (*all_cells)[i]; // global_cell_list[i]; 
+  
+		static std::vector<std::string> Colors; 
+		if( fabs( (pC->position)[2] - z_slice ) < pC->phenotype.geometry.radius 
+			&& pC->type == pEpithelial->type )
 		{
-			// only eat if I'm not full 
-			if( phenotype.volume.total < sated_volume )
-			{
-				pCell->ingest_cell(pTestCell); 
-				return; 
-			}
-	
+			double r = pC->phenotype.geometry.radius ; 
+			double rn = pC->phenotype.geometry.nuclear_radius ; 
+			double z = fabs( (pC->position)[2] - z_slice) ; 
+   
+			Colors = cell_coloring_function( pC ); 
+
+			os << "   <g id=\"cell" << pC->ID << "\">" << std::endl; 
+  
+			// figure out how much of the cell intersects with z = 0 
+   
+			double plot_radius = sqrt( r*r - z*z ); 
+
+			Write_SVG_circle( os, (pC->position)[0]-X_lower, (pC->position)[1]-Y_lower, 
+				plot_radius , 0.5, Colors[1], Colors[0] ); 
+	/*
+			// plot the nucleus if it, too intersects z = 0;
+			if( fabs(z) < rn && PhysiCell_SVG_options.plot_nuclei == true )
+			{   
+				plot_radius = sqrt( rn*rn - z*z ); 
+			 	Write_SVG_circle( os, (pC->position)[0]-X_lower, (pC->position)[1]-Y_lower, 
+					plot_radius, 0.5, Colors[3],Colors[2]); 
+			}	
+				*/
+			os << "   </g>" << std::endl;
 		}
+		
 	}
 	
+	// plot intersecting non=epithelial cells 
+	for( int i=0 ; i < total_cell_count ; i++ )
+	{
+		Cell* pC = (*all_cells)[i]; // global_cell_list[i]; 
+  
+		static std::vector<std::string> Colors; 
+		if( fabs( (pC->position)[2] - z_slice ) < pC->phenotype.geometry.radius 
+			&& pC->type != pEpithelial->type )
+		{
+			double r = pC->phenotype.geometry.radius ; 
+			double rn = pC->phenotype.geometry.nuclear_radius ; 
+			double z = fabs( (pC->position)[2] - z_slice) ; 
+   
+			Colors = cell_coloring_function( pC ); 
+
+			os << "   <g id=\"cell" << pC->ID << "\">" << std::endl; 
+  
+			// figure out how much of the cell intersects with z = 0 
+   
+			double plot_radius = sqrt( r*r - z*z ); 
+
+			Write_SVG_circle_opacity( os, (pC->position)[0]-X_lower, (pC->position)[1]-Y_lower, 
+				plot_radius , 0.5, Colors[1], Colors[0] , 0.7 ); 
+/*
+			// plot the nucleus if it, too intersects z = 0;
+			if( fabs(z) < rn && PhysiCell_SVG_options.plot_nuclei == true )
+			{   
+				plot_radius = sqrt( rn*rn - z*z ); 
+			 	Write_SVG_circle( os, (pC->position)[0]-X_lower, (pC->position)[1]-Y_lower, 
+					plot_radius, 0.5, Colors[3],Colors[2]); 
+			}		
+*/			
+			os << "   </g>" << std::endl;
+		}
+		
+	}
+	
+	os << "  </g>" << std::endl; 
+	
+	// plot intersecting BM points
+	/* 
+	 for( int i=0 ; i < BasementMembraneNodes.size() ; i++ )
+	 {
+		// vector<string> Colors = false_cell_coloring( pC ); 
+		BasementMembraneNode* pBMN = BasementMembraneNodes[i]; 
+		double thickness =0.1; 
+		
+		if( fabs( *(pBMN->Position)(2) - z_slice ) < thickness/2.0 ) 
+		{
+		 string bm_color ( "rgb(0,0,0)" );
+		 double r = thickness/2.0; 
+		 double z = fabs( *(pBMN->Position)(2) - z_slice) ; 
+
+		 os << " <g id=\"BMN" << pBMN->ID << "\">" << std::endl; 
+		 Write_SVG_circle( os,*(pBMN->Position)(0)-X_lower, *(pBMN->Position)(1)+top_margin-Y_lower, 10*thickness/2.0 , 0.5 , bm_color , bm_color ); 
+		 os << " </g>" << std::endl;
+		}
+		// pC = pC->pNextCell;
+	 }
+	*/ 
+	
+	// end of the <g ID="tissue">
+	os << " </g>" << std::endl; 
+ 
+	// draw a scale bar
+ 
+	double bar_margin = 0.025 * plot_height; 
+	double bar_height = 0.01 * plot_height; 
+	double bar_width = PhysiCell_SVG_options.length_bar; 
+	double bar_stroke_width = 0.001 * plot_height; 
+	
+	std::string bar_units = PhysiCell_SVG_options.simulation_space_units; 
+	// convert from micron to mm
+	double temp = bar_width;  
+
+	if( temp > 999 && std::strstr( bar_units.c_str() , PhysiCell_SVG_options.mu.c_str() )   )
+	{
+		temp /= 1000;
+		bar_units = "mm";
+	}
+	// convert from mm to cm 
+	if( temp > 9 && std::strcmp( bar_units.c_str() , "mm" ) == 0 )
+	{
+		temp /= 10; 
+		bar_units = "cm";
+	}
+	
+	szString = new char [1024];
+	sprintf( szString , "%u %s" , (int) round( temp ) , bar_units.c_str() );
+ 
+	Write_SVG_rect( os , plot_width - bar_margin - bar_width  , plot_height + top_margin - bar_margin - bar_height , 
+		bar_width , bar_height , 0.002 * plot_height , "rgb(255,255,255)", "rgb(0,0,0)" );
+	Write_SVG_text( os, szString , plot_width - bar_margin - bar_width + 0.25*font_size , 
+		plot_height + top_margin - bar_margin - bar_height - 0.25*font_size , 
+		font_size , PhysiCell_SVG_options.font_color.c_str() , PhysiCell_SVG_options.font.c_str() ); 
+	
+	delete [] szString; 
+
+	// plot runtime 
+	szString = new char [1024]; 
+	RUNTIME_TOC(); 
+	std::string formatted_stopwatch_value = format_stopwatch_value( runtime_stopwatch_value() );
+	Write_SVG_text( os, formatted_stopwatch_value.c_str() , bar_margin , top_margin + plot_height - bar_margin , 0.75 * font_size , 
+		PhysiCell_SVG_options.font_color.c_str() , PhysiCell_SVG_options.font.c_str() );
+	delete [] szString; 
+
+	// draw a box around the plot window
+	Write_SVG_rect( os , 0 , top_margin, plot_width, plot_height , 0.002 * plot_height , "rgb(0,0,0)", "none" );
+	
+	// close the svg tag, close the file
+	Write_SVG_end( os ); 
+	os.close();
+ 
 	return; 
 }
 
-void predator_cycling_function( Cell* pCell, Phenotype& phenotype, double dt )
-{
-	double sated_volume = pCell->parameters.pReference_live_phenotype->volume.total * 
-		parameters.doubles("relative_sated_volume" ); 
-	
-	if( phenotype.volume.total > sated_volume )
-	{ phenotype.cycle.data.transition_rate(0,1) = get_cell_definition("prey").phenotype.cycle.data.transition_rate(0,1) * 0.01; }
-	else
-	{ phenotype.cycle.data.transition_rate(0,1) = 0; }
-	return; 
-}
 
-void prey_cycling_function( Cell* pCell , Phenotype& phenotype, double dt )
-{
-	static int signal_index = microenvironment.find_density_index( "prey signal" ); 
-	
-	double threshold = parameters.doubles("prey_quorom_threshold" ) + 1e-16 ; 
-	double factor = (threshold - pCell->nearest_density_vector()[signal_index] )/threshold; 
-	if( factor < 0 )
-	{ factor = 0.0; } 
-	
-	phenotype.cycle.data.transition_rate(0,1) = get_cell_definition("prey").phenotype.cycle.data.transition_rate(0,1); 
-	phenotype.cycle.data.transition_rate(0,1) *= factor; 
-	
-	return; 
-}
-*/

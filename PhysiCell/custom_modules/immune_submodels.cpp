@@ -565,7 +565,6 @@ void macrophage_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
 	// (Adrianne) if macrophage volume exceeds a threshold value we say it is "exhausted" and unable to phagocytose until it's volume drops below this threshold
 	if( pCell->phenotype.volume.total> pCell->custom_data["threshold_macrophage_volume"])
 	{
-		std::cout<<"cell becomes exhausted"<<std::endl;	
 		// (Adrianne) when a macrophage is in an exhausted state it has a death rate  2.1e-4
 		phenotype.death.rates[apoptosis_index] = pCell->custom_data["exhausted_macrophage_death_rate"];
 		return;
@@ -800,7 +799,69 @@ void neutrophil_mechanics( Cell* pCell, Phenotype& phenotype, double dt )
 // (Adrianne) DC phenotype function
 void DC_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
 {
+	// (Adrianne) probability of activated DC departing after activation
+	double probability_of_DC_departing = pCell->custom_data["probability_of_DC_departing"]; 
+	
+	// (Adrianne) if DC is already activated, then check whether it leaves the tissue
+	if( pCell->custom_data["activated_immune_cell"] == 1.0 && UniformRandom() < probability_of_DC_departing)
+	{
+		// (Adrianne) DC leaves the tissue and so we delete that DC
+		delete_cell( pCell );
+		std::cout<<"DC leaves tissue"<<std::endl;
+		return;
+	}
+	else if( pCell->custom_data["activated_immune_cell"] == 1 ) // (Adrianne) activated DCs that don't leave the tissue can further activate CD8s increasing their proliferation rate and attachment rates
+	{
+		std::vector<Cell*> neighbors = pCell->cells_in_my_container(); // (Adrianne) find cells in a neighbourhood of DCs
+		int n = 0; 
+		Cell* pTestCell = neighbors[n]; 
+		while( n < neighbors.size() )
+		{
+			pTestCell = neighbors[n]; 
+			// if it is not me and the target is dead 
+			if( pTestCell != pCell && pTestCell->phenotype.death.dead == false && pTestCell->type == 3 ) // (Adrianne) check if any neighbour cells are live T cells
+			{			
+				pTestCell-> custom_data["cell_attachment_rate"] = pTestCell-> custom_data["cell_attachment_rate"]*2; // (Adrianne) double T cell attachment rate
+				//(Adrianne) double proliferation rate
+				std::cout<<"DC further activates T cell"<<std::endl;
+				return;
+			}
 			
+			n++; 
+		}
+		return;
+	}
+	else 
+	{
+		// (adrianne) DCs become activated if there is an infected cell in their neighbour with greater 1 viral protein or if the local amount of virus is greater than 10
+		static int virus_index = microenvironment.find_density_index("virion");
+		double virus_amount = pCell->nearest_density_vector()[virus_index];
+		if( virus_amount*microenvironment.mesh.voxels[1].volume > 10) // (Adrianne) amount of virus in local voxel with DC is greater than 10
+		{
+			pCell->custom_data["activated_immune_cell"] = 1.0; // (Adrianne) DC becomes activated
+			std::cout<<"DC becomes activated by virus"<<std::endl;
+		}
+		else //(Adrianne) check for infected cells nearby
+		{	
+			std::vector<Cell*> neighbors = pCell->cells_in_my_container();
+			int n = 0; 
+			Cell* pTestCell = neighbors[n]; 
+			int nP  = pTestCell->custom_data.find_variable_index( "viral_protein" ); //(Adrianne) finding the viral protein inside cells
+			while( n < neighbors.size() )
+			{
+				pTestCell = neighbors[n]; 
+				// if it is not me and the target is dead 
+				if( pTestCell != pCell && pTestCell->phenotype.death.dead == false && pTestCell->custom_data[nP]>1 )
+				{			
+					pCell->custom_data["activated_immune_cell"] = 1.0; 
+					std::cout<<"DC becomes activated by infected cell"<<std::endl;
+					return;
+				}
+				
+				n++; 
+			}
+		}
+	}
 	return; 
 }
 

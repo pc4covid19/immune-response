@@ -260,7 +260,10 @@ void pyroptosis_cascade( Cell* pCell, Phenotype& phenotype, double dt )
 	//Update cytoplasmic volume
 	double dVol_c = dt * k_vol_c * g_gsdmd * pCell->custom_data[volume_c];
 	pCell->custom_data[volume_c] += dVol_c;//We want to relate this to cell cytoplasm volume
-	
+		
+	// (Adrianne) update cell pro-inflammatory secretion rate based on IL18 secretion rate - need to double check unit conversion
+	static int proinflammatory_cytokine_index = microenvironment.find_density_index( "pro-inflammatory cytokine");
+	pCell->phenotype.secretion.secretion_rates[proinflammatory_cytokine_index] += k_il18_cte*g_gsdmd*pCell->custom_data[il_18_c];
 	
 	// (Adrianne) finding homeostatic cell volume for lung epithelium cells
 	static Cell_Definition* pCD = find_cell_definition( "lung epithelium" ); 

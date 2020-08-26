@@ -99,7 +99,8 @@ void internal_virus_response_model( Cell* pCell, Phenotype& phenotype, double dt
 	
 	// static int nAV = pCell->custom_data.find_variable_index( "assembled_virion" ); 
 	// double AV = pCell->custom_data[nAV]; 
-
+	static int proinflammatory_cytokine_index = microenvironment.find_density_index( "pro-inflammatory cytokine");
+		
 	static int nR = pCell->custom_data.find_variable_index( "viral_RNA");
 	double R = pCell->custom_data[nR];
 	
@@ -117,7 +118,10 @@ void internal_virus_response_model( Cell* pCell, Phenotype& phenotype, double dt
 		rate *= pCell->custom_data[ "infected_cell_chemokine_secretion_rate" ];
 
 		phenotype.secretion.secretion_rates[chemokine_index] = rate; 
-		phenotype.secretion.saturation_densities[chemokine_index] = 1.0; 
+		phenotype.secretion.saturation_densities[chemokine_index] = 1.0;
+
+		// (Adrianne) adding pro-inflammatory cytokine secretion by infected cells
+		pCell->phenotype.secretion.secretion_rates[proinflammatory_cytokine_index] = pCell->custom_data["activated_cytokine_secretion_rate"];
 	}
 	
 	// (Adrianne) check whether the cell is undergoing pyroptosis and if so, evalute the pyropotosis model
@@ -263,7 +267,7 @@ void pyroptosis_cascade( Cell* pCell, Phenotype& phenotype, double dt )
 		
 	// (Adrianne) update cell pro-inflammatory secretion rate based on IL18 secretion rate - need to double check unit conversion
 	static int proinflammatory_cytokine_index = microenvironment.find_density_index( "pro-inflammatory cytokine");
-	pCell->phenotype.secretion.secretion_rates[proinflammatory_cytokine_index] += k_il18_cte*g_gsdmd*pCell->custom_data[il_18_c];
+	pCell->phenotype.secretion.secretion_rates[proinflammatory_cytokine_index] = pCell->custom_data["activated_cytokine_secretion_rate"]+k_il18_cte*g_gsdmd*pCell->custom_data[il_18_c];
 	
 	// (Adrianne) finding homeostatic cell volume for lung epithelium cells
 	static Cell_Definition* pCD = find_cell_definition( "lung epithelium" ); 

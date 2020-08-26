@@ -400,8 +400,12 @@ std::vector<std::string> tissue_coloring_function( Cell* pCell )
 		std::string color = parameters.strings("Macrophage_color");  
 		if( pCell->custom_data["activated_immune_cell" ] > 0.5 )
 		{ color = parameters.strings("activated_macrophage_color"); }
-	if( pCell->phenotype.volume.total> pCell->custom_data["threshold_macrophage_volume"] )// macrophage exhausted
+		
+		// (Adrianne) added colours to show when macrophages are exhausted and when they are hyperactivated
+		if( pCell->phenotype.volume.total> pCell->custom_data["threshold_macrophage_volume"] )// macrophage exhausted
 		{ color = parameters.strings("exhausted_macrophage_color"); }
+		else if( pCell->custom_data["ability_to_phagocytose_infected_cell"] == 1)// macrophage has been activated to kill infected cells by T cell
+		{ color = parameters.strings("hyperactivated_macrophage_color"); }
 		
 		output[0] = color; 
 		output[2] = output[0];
@@ -417,9 +421,14 @@ std::vector<std::string> tissue_coloring_function( Cell* pCell )
 		return output; 
 	}
 	
+	//(Adrianne) adding colour for DCs
 	if( pCell->phenotype.death.dead == false && pCell->type == DC_type )
 	{
-		output[0] = parameters.strings("DC_color");  
+		std::string color = parameters.strings("DC_color");  
+		if( pCell->custom_data["activated_immune_cell" ] > 0.5 )
+		{ color = parameters.strings("activated_DC_color"); }
+	
+		output[0] = color; 
 		output[2] = output[0];
 		output[3] = output[0];
 		return output; 

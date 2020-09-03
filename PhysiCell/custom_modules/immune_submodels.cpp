@@ -521,8 +521,6 @@ void macrophage_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
 		return; 
 	}
 
-	
-
 	// make changes to volume change rate??
 
 	// if too much debris, comit to apoptosis 	
@@ -546,17 +544,20 @@ void macrophage_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
 	if( neighbors.size() < 2 )
 	{ return; } 
 
-	// (Adrianne) if there is a T cell in a macrophage's neighbourhood then macrophage will be signalled to stop secretion of pro-inflam cytokine (until it re-phagocytoses something)
+	// (Adrianne) get type of CD8+ T cell
+	static int CD8_Tcell_type = get_cell_definition( "CD8 Tcell" ).type; 
+	// (Adrianne) if there is a T cell in a mac's neighbourhood AND a mac has already begin phagocytosing, then mac will stop secretion of pro-inflam cytokine (until it re-phagocytoses something)
 	int n = 0; 
 	Cell* pContactCell = neighbors[n]; 
 	while( n < neighbors.size() )
 	{
 		pContactCell = neighbors[n]; 
-		// if it is not me, not dead and is a T cell 
-		if( pContactCell != pCell && pContactCell->phenotype.death.dead == false && pContactCell->type == 3)
+		// (Adrianne) if it is not me, not dead and is a T cell 
+		
+		if( pContactCell != pCell && pContactCell->phenotype.death.dead == false && pContactCell->type == CD8_Tcell_type && pCell->custom_data["activated_immune_cell"] > 0.5) 
 		{
 			phenotype.secretion.secretion_rates[proinflammatory_cytokine_index] = 0;// (Adrianne) contact with CD8 T cell turns off pro-inflammatory cytokine secretion
-			pCell->custom_data["ability_to_phagocytose_infected_cell"] = 1; // (Adrianne) contact with T cell induces macrophage's ability to phagocytose infected cells
+			pCell->custom_data["ability_to_phagocytose_infected_cell"] = 1; // (Adrianne) contact with CD4 T cell induces macrophage's ability to phagocytose infected cells
 			n=neighbors.size();
 		} 
 		n++;
@@ -801,6 +802,9 @@ void DC_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
 {
 	// (Adrianne) probability of activated DC departing after activation
 	double probability_of_DC_departing = pCell->custom_data["probability_of_DC_departing"]; 
+
+	// (Adrianne) get type of CD8+ T cell
+	static int CD8_Tcell_type = get_cell_definition( "CD8 Tcell" ).type;
 	
 	// (Adrianne) if DC is already activated, then check whether it leaves the tissue
 	if( pCell->custom_data["activated_immune_cell"] == 1.0 && UniformRandom() < probability_of_DC_departing)
@@ -819,9 +823,20 @@ void DC_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
 		{
 			pTestCell = neighbors[n]; 
 			// if it is not me and the target is dead 
-			if( pTestCell != pCell && pTestCell->phenotype.death.dead == false && pTestCell->type == 3 ) // (Adrianne) check if any neighbour cells are live T cells
+			if( pTestCell != pCell && pTestCell->phenotype.death.dead == false && pTestCell->type == CD8_Tcell_type ) // (Adrianne) check if any neighbour cells are live T cells
 			{			
-				pTestCell-> custom_data["cell_attachment_rate"] = pTestCell-> custom_data["cell_attachment_rate"]*2; // (Adrianne) double T cell attachment rate
+				pTestCell-> custom_data["cell_attachment_rate"] = parameters.doubles("DC_induced_CD8_attachment"); // (Adrianne) DC induced T cell attachement rate
+				pTestCell-> custom_data["cell_attachment_rate"] = parameters.doubles("DC_induced_CD8_proliferation"); // (Adrianne) DC induced T cell proliferation rate
+				
+				
+			<phenotype>
+				<cycle code="6" name="flow_cytometry_separated_cycle_model">  
+					<!-- using higher than normal significant digits to match divisions in default code -->
+					<phase_transition_rates units="1/min"> 
+						<!-- G0/G1 to S -->
+						<rate start_index="0" end_index="1" fixed_duration="false">0</rate>
+				
+				
 				//(Adrianne) double proliferation rate
 				std::cout<<"DC further activates T cell"<<std::endl;
 				return;

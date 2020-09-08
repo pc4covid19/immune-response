@@ -121,24 +121,26 @@ void internal_virus_response_model( Cell* pCell, Phenotype& phenotype, double dt
 		phenotype.secretion.saturation_densities[chemokine_index] = 1.0;
 
 		// (Adrianne) adding pro-inflammatory cytokine secretion by infected cells
-		pCell->phenotype.secretion.secretion_rates[proinflammatory_cytokine_index] = pCell->custom_data["activated_cytokine_secretion_rate"];
+		pCell->phenotype.secretion.secretion_rates[proinflammatory_cytokine_index] = pCell->custom_data["activated_cytokine_secretion_rate"]/10;
 	}
-	
+	/*
 	// (Adrianne) check whether the cell is undergoing pyroptosis and if so, evalute the pyropotosis model
-	if( pCell->custom_data["cell_pyroptosis_flag"]==1 )
+	if( pCell->custom_data["cell_pyroptosis_flag"]==1 && phenotype.death.dead == false )
 	{
+		std::cout<<AV<<" "<<pCell->custom_data["max_apoptosis_half_max"]/2<<std::endl;
+		std::cout<<"here2"<<std::endl;
 		pyroptosis_cascade( pCell, phenotype, dt ); 
-		return;
 	};
 	
 	// (Adrianne) pyroptosis cascade in the cell is initiated if assembled virions > max_apoptosis_half_max*3/2 - this choice is currently arbitrary and needs to be discussed in more detail
-	if( AV >  pCell->custom_data["max_apoptosis_half_max"]*3/2 )
+	if( AV >  pCell->custom_data["max_apoptosis_half_max"]/100 && phenotype.death.dead == false )
 	{
-		pCell->custom_data["cell_pyroptosis_flag"]==1; // (Adrianne) pyroptosis cascade initiated
+		std::cout<<AV<<" "<<pCell->custom_data["max_apoptosis_half_max"]/2<<std::endl;
+		std::cout<<"here"<<std::endl;
+		pCell->custom_data["cell_pyroptosis_flag"]=1; // (Adrianne) pyroptosis cascade initiated
 		pyroptosis_cascade( pCell, phenotype, dt );
-		return;
 	}
-	
+	*/
 	return; 
 }
 
@@ -271,7 +273,7 @@ void pyroptosis_cascade( Cell* pCell, Phenotype& phenotype, double dt )
 	
 	// (Adrianne) finding homeostatic cell volume for lung epithelium cells
 	static Cell_Definition* pCD = find_cell_definition( "lung epithelium" ); 
-	
+	std::cout<<pCell->custom_data[volume_c]<<" "<<1.5*pCD->phenotype.volume.total<<std::endl;
 	// (Adrianne) if cell volume modelled by the ODE system exceeds 1.5*homeotastatic volume, then the cell dies
 	if( pCell->custom_data[volume_c]>1.5*pCD->phenotype.volume.total)
 	{

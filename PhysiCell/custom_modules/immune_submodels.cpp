@@ -826,17 +826,16 @@ void DC_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
 			if( pTestCell != pCell && pTestCell->phenotype.death.dead == false && pTestCell->type == CD8_Tcell_type ) // (Adrianne) check if any neighbour cells are live T cells
 			{			
 				pTestCell-> custom_data["cell_attachment_rate"] = parameters.doubles("DC_induced_CD8_attachment"); // (Adrianne) DC induced T cell attachement rate
-				pTestCell-> custom_data["cell_attachment_rate"] = parameters.doubles("DC_induced_CD8_proliferation"); // (Adrianne) DC induced T cell proliferation rate
+				//pTestCell-> custom_data["cell_attachment_rate"] = parameters.doubles("DC_induced_CD8_proliferation"); // (Adrianne) DC induced T cell proliferation rate STILL TO WRITE
 				
-				
-			<phenotype>
+			/*<phenotype>
 				<cycle code="6" name="flow_cytometry_separated_cycle_model">  
 					<!-- using higher than normal significant digits to match divisions in default code -->
 					<phase_transition_rates units="1/min"> 
 						<!-- G0/G1 to S -->
 						<rate start_index="0" end_index="1" fixed_duration="false">0</rate>
 				
-				
+				*/
 				//(Adrianne) double proliferation rate
 				std::cout<<"DC further activates T cell"<<std::endl;
 				return;

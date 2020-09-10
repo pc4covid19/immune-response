@@ -910,9 +910,10 @@
 				description="color of hyperactivated macrophage">rgb(168,221,181)</hyperactivated_macrophage_color><!--old: paleturquoise -->
 			<Neutrophil_color type="string" description="neutrophil color">cyan</Neutrophil_color>
 		<!-- (Adrianne) adding DC color for naive and active  -->
-			<DC_color type="string" 				description="DC color">rgb(129,15,124)</DC_color>
+			<DC_color type="string" 
+				description="DC color">rgb(129,15,124)</DC_color>
 			<activated_DC_color type="string" 
-				description="DC color">fuschia</activated_DC_color>
+				description="DC color">fuchsia</activated_DC_color>
 		
 	</user_parameters>
 	

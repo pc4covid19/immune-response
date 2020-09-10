@@ -503,6 +503,9 @@
 				<!-- (adrianne) boolean parameter for whether macrophages has been activated by a T cell to be able to phagocytose infected cells --> 
 				<ability_to_phagocytose_infected_cell units="dimensionless" type="int"
 					description="Boolean for whether macrophages can phagocytose infected cells">0</ability_to_phagocytose_infected_cell>
+				<!-- (adrianne) time (mins) after DC activation when it will leave tissue, assigned uniform random variable at activation--> 
+				<time_of_DC_departure units="min" type="double"
+					description="Time DC leaves tissue after activation">0</time_of_DC_departure>
 <!--
 				<relative_maximum_volume units="dimensionless" type="double"
 					description="max tolerated volume (relative to normal volume) before triggering apoptosis">1.8</relative_maximum_volume>
@@ -770,12 +773,49 @@
 				</secretion>
 
 				<volume>
-					<total units="micron^3">1149.7</total>
+					<total units="micron^3">1767</total>
 					<nuclear units="micron^3">143.7</nuclear> <!-- not sure yet -->
 					
 					<cytoplasmic_biomass_change_rate units="1/min">0.045</cytoplasmic_biomass_change_rate> 
 					<!-- set this higher so that cells "digest" phagocytosed materials faster -->
 				</volume>
+			</phenotype>
+			<custom_data>
+			</custom_data>
+		</cell_definition>
+		
+	<!-- (Adrianne) adding a new cell type: CD4 T cells -->	
+		<cell_definition name="CD4 Tcell" parent_type="immune" ID="7">
+			<phenotype>
+				<death>
+					<model code="100" name="apoptosis"> 
+						<death_rate units="1/min">2.8e-4</death_rate> 
+					</model> 
+				</death>			
+			
+				<motility>
+					<migration_bias units="dimensionless">0.70</migration_bias>
+					<options>
+						<enabled>true</enabled>
+						<use_2D>true</use_2D>
+						<chemotaxis>
+							<enabled>true</enabled>
+							<substrate>chemokine</substrate>
+							<direction>1</direction>
+						</chemotaxis>
+					</options>
+				</motility>
+				<volume>
+					<total units="micron^3">58</total>
+					<nuclear units="micron^3">5.8</nuclear>
+				</volume>
+	
+				<secretion>
+					<substrate name="debris">
+						<uptake_rate units="1/min">0</uptake_rate>
+					</substrate> 	
+				</secretion>
+
 			</phenotype>
 			<custom_data>
 			</custom_data>
@@ -823,20 +863,23 @@
 				description="Infect center cell with one virion (overrides MOI)">false</use_single_infected_cell>
 			
 			<number_of_CD8_Tcells type="int" units="none" 
-				description="initial number of CD8 T cells">0</number_of_CD8_Tcells>
+				description="initial number of CD8 T cells in tissue">0</number_of_CD8_Tcells>
 			<number_of_macrophages type="int" units="none" 
 				description="initial number of macrophages">50</number_of_macrophages>
 			<number_of_neutrophils type="int" units="none" 
 				description="initial number of neutrophils">0</number_of_neutrophils>
 		<!-- (Adrianne) initial number of DCs in the lung -->
 			<number_of_DCs type="int" units="none" 
-				description="initial number of Dendritic Cells">50</number_of_DCs> <!-- needs more investigation, some sources say 100 per mm^2 -->
-		<!-- (Adrianne) New phagocytosis rate of CD8s after interaction with DCS-->	
+				description="initial number of Dendritic Cells">28</number_of_DCs> <!-- needs more investigation, some sources say 100 per mm^2 -->
+		<!-- (Adrianne) initial number of CD4 T cells in the lung -->
+			<number_of_CD4_Tcells type="int" units="none" 
+				description="initial number of CD4 Tcells in tissue">0</number_of_CD4_Tcells> 
+		<!-- (Adrianne) New CD8 proliferation rate (G0G1 TO S PHASE) after interaction with DCS-->	
 			<DC_induced_CD8_proliferation type="double" units="cells/min/micron^3"
-				description="DC induced CD8 proliferation rate">0.6</DC_induced_CD8_proliferation>
+				description="DC induced CD8 proliferation rate">0.6</DC_induced_CD8_proliferation> <!-- currently an arbitrary choice -->
 		<!-- (Adrianne) New attachment rate of CD8s after interaction with DCS-->	
 			<DC_induced_CD8_attachment type="double" units="cells/min/micron^3"
-				description="DC induced CD8 attachement rate">0.6</DC_induced_CD8_attachment>
+				description="DC induced CD8 attachement rate">0.6</DC_induced_CD8_attachment><!-- currently an arbitrary choice -->
 				
 			<perecentage_tissue_vascularized units="percentage" type="double"
 				description="percentage of tissue sitting above blood vessels">8.8</perecentage_tissue_vascularized>			
@@ -853,22 +896,24 @@
 				description="lung epithelium color">blue</lung_epithelium_color> -->
 			<CD8_Tcell_color type="string" 
 				description="CD8 T cell color">red</CD8_Tcell_color>
+			<CD4_Tcell_color type="string" 
+				description="CD8 T cell color">orange</CD4_Tcell_color>
 			<Macrophage_color type="string" 
-				description="macrophage color">lime</Macrophage_color>
+				description="macrophage color">rgb(0,109,44)</Macrophage_color>
 			<activated_macrophage_color type="string" 
-				description="color of activated macrophage">fuchsia</activated_macrophage_color>
+				description="color of activated macrophage">rgb(116,196,118)</activated_macrophage_color>
 		<!-- (Adrianne) added a macrophage exhaustion colouring - when macrophages have eaten above their threshold and are exhausted -->
 			<exhausted_macrophage_color type="string" 
-				description="color of exhausted macrophage">purple</exhausted_macrophage_color>
+				description="color of exhausted macrophage">rgb(199,233,192)</exhausted_macrophage_color>
 		<!-- (Adrianne) added a macrophage hyperactived colouring - when macrophages have interacted with T cell and beoome hyperactivated and can kill infected cells -->
 			<hyperactivated_macrophage_color type="string" 
-				description="color of hyperactivated macrophage">paleturquoise</hyperactivated_macrophage_color>
+				description="color of hyperactivated macrophage">rgb(168,221,181)</hyperactivated_macrophage_color>
 			<Neutrophil_color type="string" description="neutrophil color">cyan</Neutrophil_color>
 		<!-- (Adrianne) adding DC color for naive and active  -->
 			<DC_color type="string" 
-				description="DC color">sandybrown</DC_color>
+				description="DC color">rgb(82,82,82)</DC_color>
 			<activated_DC_color type="string" 
-				description="DC color">orangered</activated_DC_color>
+				description="DC color">rgb(189,189,189)</activated_DC_color>
 		
 	</user_parameters>
 	

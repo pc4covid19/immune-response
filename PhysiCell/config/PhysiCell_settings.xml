@@ -899,21 +899,20 @@
 			<CD4_Tcell_color type="string" 
 				description="CD8 T cell color">orange</CD4_Tcell_color>
 			<Macrophage_color type="string" 
-				description="macrophage color">rgb(0,109,44)</Macrophage_color>
+				description="macrophage color">rgb(35,139,69)</Macrophage_color>
 			<activated_macrophage_color type="string" 
-				description="color of activated macrophage">rgb(116,196,118)</activated_macrophage_color>
+				description="color of activated macrophage">lime</activated_macrophage_color> <!-- old: fuschia -->
 		<!-- (Adrianne) added a macrophage exhaustion colouring - when macrophages have eaten above their threshold and are exhausted -->
 			<exhausted_macrophage_color type="string" 
-				description="color of exhausted macrophage">rgb(199,233,192)</exhausted_macrophage_color>
+				description="color of exhausted macrophage">rgb(116,196,118)</exhausted_macrophage_color><!-- old: purple -->
 		<!-- (Adrianne) added a macrophage hyperactived colouring - when macrophages have interacted with T cell and beoome hyperactivated and can kill infected cells -->
 			<hyperactivated_macrophage_color type="string" 
-				description="color of hyperactivated macrophage">rgb(168,221,181)</hyperactivated_macrophage_color>
+				description="color of hyperactivated macrophage">rgb(168,221,181)</hyperactivated_macrophage_color><!--old: paleturquoise -->
 			<Neutrophil_color type="string" description="neutrophil color">cyan</Neutrophil_color>
 		<!-- (Adrianne) adding DC color for naive and active  -->
-			<DC_color type="string" 
-				description="DC color">rgb(82,82,82)</DC_color>
+			<DC_color type="string" 				description="DC color">rgb(129,15,124)</DC_color>
 			<activated_DC_color type="string" 
-				description="DC color">rgb(189,189,189)</activated_DC_color>
+				description="DC color">fuschia</activated_DC_color>
 		
 	</user_parameters>
 	

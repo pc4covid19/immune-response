@@ -886,7 +886,7 @@ void DC_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
 				{			
 					pCell->custom_data["activated_immune_cell"] = 1.0; 
 					pCell->custom_data["time_of_DC_departure"] = PhysiCell_globals.current_time+(23*UniformRandom()+1)*60; // (Adrianne) calculating the time till DC exits the tissue uniform random vairable between 1 and 24
-					std::cout<<"DC becomes activated by infected cell"<<std::endl;
+					std::cout<<"DC becomes activated by infected cell and leaves at "<<pCell->custom_data["time_of_DC_departure"]<<std::endl;
 					return;
 				}
 				
@@ -900,10 +900,69 @@ void DC_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
 // (Adrianne) DC mechanics function
 void DC_mechanics( Cell* pCell, Phenotype& phenotype, double dt )
 {
+	static int debris_index = microenvironment.find_density_index( "debris");
 
+	if( phenotype.death.dead == true )
+	{
+		pCell->functions.update_phenotype = NULL;
+		pCell->functions.custom_cell_rule = NULL; 
+
+		phenotype.secretion.secretion_rates[debris_index] = pCell->custom_data["debris_secretion_rate"]; 
+		return; 
+	}
+
+	// bounds check 
+	if( check_for_out_of_bounds( pCell , 10.0 ) )
+	{ 
+		#pragma omp critical 
+		{ cells_to_move_from_edge.push_back( pCell ); }
+		// replace_out_of_bounds_cell( pCell, 10.0 );
+		// return; 
+	}	
+
+//	// death check 
+//	if( phenotype.death.dead == true ) 
+//	{ remove_all_adhesions( pCell ); }
 
 	return; 
 }
+// (Adrianne CD4 phenotype function
+void CD4_Tcell_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
+{
+	//(Adrianne) currently CD4's don't have any rules
+	return;
+}
+
+// (Adrianne) CD4 mechanics function
+void CD4_Tcell_mechanics( Cell* pCell, Phenotype& phenotype, double dt )
+{
+	static int debris_index = microenvironment.find_density_index( "debris");
+
+	if( phenotype.death.dead == true )
+	{
+		pCell->functions.update_phenotype = NULL;
+		pCell->functions.custom_cell_rule = NULL; 
+
+		phenotype.secretion.secretion_rates[debris_index] = pCell->custom_data["debris_secretion_rate"]; 
+		return; 
+	}
+
+	// bounds check 
+	if( check_for_out_of_bounds( pCell , 10.0 ) )
+	{ 
+		#pragma omp critical 
+		{ cells_to_move_from_edge.push_back( pCell ); }
+		// replace_out_of_bounds_cell( pCell, 10.0 );
+		// return; 
+	}	
+
+//	// death check 
+//	if( phenotype.death.dead == true ) 
+//	{ remove_all_adhesions( pCell ); }
+
+	return; 
+}
+
 void immune_submodels_setup( void )
 {
 	Cell_Definition* pCD;
@@ -1002,8 +1061,8 @@ void immune_submodels_setup( void )
 	CD4_submodel_info.version = immune_submodels_version; 
 		// set functions 
 	CD4_submodel_info.main_function = NULL; 
-	CD4_submodel_info.phenotype_function = NULL; 
-	CD4_submodel_info.mechanics_function = NULL; 
+	CD4_submodel_info.phenotype_function = CD4_Tcell_phenotype; 
+	CD4_submodel_info.mechanics_function = CD4_Tcell_mechanics; 
 		// what microenvironment variables do you expect? 
 	CD4_submodel_info.microenvironment_variables.push_back( "virion" ); 
 	CD4_submodel_info.microenvironment_variables.push_back( "interferon 1" ); 
@@ -1268,6 +1327,7 @@ void immune_cell_recruitment( double dt )
 		static double CD4TC_sat_signal = parameters.doubles( "CD8_Tcell_recruitment_saturation_signal" ); 
 		static double CD4TC_max_minus_min = CD4TC_sat_signal - CD4TC_min_signal; 
 		
+		
 		total_rate = 0;
 		// integrate \int_domain r_max * (signal-signal_min)/(signal_max-signal_min) * dV 
 		total_scaled_signal= 0.0;
@@ -1308,11 +1368,11 @@ void immune_cell_recruitment( double dt )
 		t_next_immune = t_immune + dt_immune; 
 		
 		// (Adrianne) DC recruitment - *** This section will be changed to be Tarun's model  so I've left recruitment parameters to be CD8 cell parameters**
-		static double DC_recruitment_rate = parameters.doubles( "CD8_Tcell_max_recruitment_rate" ); 
-		static double DC_min_signal = parameters.doubles( "CD8_Tcell_recruitment_min_signal" ); 
-		static double DC_sat_signal = parameters.doubles( "CD8_Tcell_recruitment_saturation_signal" ); 
+		static double DC_recruitment_rate = parameters.doubles( "macrophage_max_recruitment_rate" ); 
+		static double DC_min_signal = parameters.doubles( "macrophage_recruitment_min_signal" ); 
+		static double DC_sat_signal = parameters.doubles( "macrophage_recruitment_saturation_signal" ); 
 		static double DC_max_minus_min = DC_sat_signal - DC_min_signal; 
-		
+				
 		total_rate = 0;
 		// integrate \int_domain r_max * (signal-signal_min)/(signal_max-signal_min) * dV 
 		total_scaled_signal= 0.0;
@@ -1365,7 +1425,7 @@ void initial_immune_cell_placement( void )
 	Cell_Definition* pMF = find_cell_definition( "macrophage" ); 
 	Cell_Definition* pN = find_cell_definition( "neutrophil" ); 
 	Cell_Definition* pDC = find_cell_definition( "DC" ); 
-	Cell_Definition* pCD4 = find_cell_definition( "CD4 T cell" ); 
+	Cell_Definition* pCD4 = find_cell_definition( "CD4 Tcell" ); 
 	
 	// CD8+ T cells; 
 	for( int n = 0 ; n < parameters.ints("number_of_CD8_Tcells") ; n++ )

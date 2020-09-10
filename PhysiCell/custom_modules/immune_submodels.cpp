@@ -849,12 +849,11 @@ void DC_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
 				pTestCell-> custom_data["cell_attachment_rate"] = parameters.doubles("DC_induced_CD8_attachment"); // (Adrianne) DC induced T cell attachement rate
 				
 				// (Adrianne) finding the G0G1 and S phase index and setting the transition rate to be non zero so that CD8 T cells start proliferating after interacting with DC
-				int cycle_G0G1_index = Ki67_basic.find_phase_index( PhysiCell_constants::G0G1_phase ); 
-				int cycle_S_index = Ki67_basic.find_phase_index( PhysiCell_constants::S_phase ); 
-				pCell->phenotype.cycle.data.transition_rate(cycle_G0G1_index,cycle_S_index) = parameters.doubles("DC_induced_CD8_proliferation"); 			
+				int cycle_G0G1_index = flow_cytometry_separated_cycle_model.find_phase_index( PhysiCell_constants::G0G1_phase ); 
+				int cycle_S_index = flow_cytometry_separated_cycle_model.find_phase_index( PhysiCell_constants::S_phase ); 
+				pTestCell->phenotype.cycle.data.transition_rate(cycle_G0G1_index,cycle_S_index) = parameters.doubles("DC_induced_CD8_proliferation"); 			
+								
 				
-				//(Adrianne) double proliferation rate
-				std::cout<<"DC further activates T cell"<<std::endl;
 				return;
 			}
 			

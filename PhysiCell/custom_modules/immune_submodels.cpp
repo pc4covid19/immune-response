@@ -9,6 +9,7 @@ Submodel_Information CD8_submodel_info;
 Submodel_Information Macrophage_submodel_info; 
 Submodel_Information Neutrophil_submodel_info; 
 Submodel_Information DC_submodel_info; 
+Submodel_Information CD4_submodel_info;
 
 std::vector<Cell*> cells_to_move_from_edge; 
 
@@ -126,8 +127,6 @@ void nudge_out_of_bounds_cell( Cell* pC , double tolerance )
 	
 	return; 
 }
-
-
 
 void replace_out_of_bounds_cell( Cell* pC , double tolerance )
 {
@@ -355,6 +354,23 @@ void create_infiltrating_Tcell(void)
 	return;
 }
 
+// (Adrianne) creating infiltrating CD4 cells
+void create_infiltrating_CD4Tcell(void)
+{
+	static Cell_Definition* pCD = find_cell_definition( "CD4 Tcell" );
+	create_infiltrating_immune_cell( pCD ); 
+	
+	return;
+}
+
+// (Adrianne) creating infiltrating DCs
+void create_infiltrating_DC(void)
+{
+	static Cell_Definition* pCD = find_cell_definition( "DC" );
+	create_infiltrating_immune_cell( pCD ); 
+	
+	return;
+}
 void create_infiltrating_macrophage(void)
 {
 	static Cell_Definition* pCD = find_cell_definition( "macrophage" );
@@ -544,8 +560,9 @@ void macrophage_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
 	if( neighbors.size() < 2 )
 	{ return; } 
 
-	// (Adrianne) get type of CD8+ T cell
+	// (Adrianne) get type of CD8+ T cell and CD4+ t CELL
 	static int CD8_Tcell_type = get_cell_definition( "CD8 Tcell" ).type; 
+	static int CD4_Tcell_type = get_cell_definition( "CD4 Tcell" ).type; 
 	// (Adrianne) if there is a T cell in a mac's neighbourhood AND a mac has already begin phagocytosing, then mac will stop secretion of pro-inflam cytokine (until it re-phagocytoses something)
 	int n = 0; 
 	Cell* pContactCell = neighbors[n]; 
@@ -557,9 +574,13 @@ void macrophage_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
 		if( pContactCell != pCell && pContactCell->phenotype.death.dead == false && pContactCell->type == CD8_Tcell_type && pCell->custom_data["activated_immune_cell"] > 0.5) 
 		{
 			phenotype.secretion.secretion_rates[proinflammatory_cytokine_index] = 0;// (Adrianne) contact with CD8 T cell turns off pro-inflammatory cytokine secretion
+			n=neighbors.size();
+		}
+		else if( pContactCell != pCell && pContactCell->phenotype.death.dead == false && pContactCell->type == CD4_Tcell_type && pCell->custom_data["activated_immune_cell"] > 0.5) 
+		{
 			pCell->custom_data["ability_to_phagocytose_infected_cell"] = 1; // (Adrianne) contact with CD4 T cell induces macrophage's ability to phagocytose infected cells
 			n=neighbors.size();
-		} 
+		} 		
 		n++;
 	}
 	
@@ -620,7 +641,7 @@ void macrophage_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
 				
 				return; 
 			}
-			else if( pTestCell != pCell && pCell->custom_data["ability_to_phagocytose_infected_cell"]==1 && pTestCell->custom_data[nP]>1 &&
+			else if( pTestCell != pCell && pCell->custom_data["ability_to_phagocytose_infected_cell"]== 1 && pTestCell->custom_data[nP]>1 &&
 				UniformRandom() < probability_of_phagocytosis ) // (Adrianne) macrophages that have been activated by T cells can phagocytose infected cells that contain at least 1 viral protein
 			{
 				{
@@ -801,20 +822,20 @@ void neutrophil_mechanics( Cell* pCell, Phenotype& phenotype, double dt )
 void DC_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
 {
 	// (Adrianne) probability of activated DC departing after activation
-	double probability_of_DC_departing = pCell->custom_data["probability_of_DC_departing"]; 
+	double time_of_DC_departure = pCell->custom_data["time_of_DC_departure"]; 
 
 	// (Adrianne) get type of CD8+ T cell
 	static int CD8_Tcell_type = get_cell_definition( "CD8 Tcell" ).type;
 	
 	// (Adrianne) if DC is already activated, then check whether it leaves the tissue
-	if( pCell->custom_data["activated_immune_cell"] == 1.0 && UniformRandom() < probability_of_DC_departing)
+	if( pCell->custom_data["activated_immune_cell"] == 1 && PhysiCell_globals.current_time >= time_of_DC_departure)
 	{
 		// (Adrianne) DC leaves the tissue and so we delete that DC
 		delete_cell( pCell );
 		std::cout<<"DC leaves tissue"<<std::endl;
 		return;
 	}
-	else if( pCell->custom_data["activated_immune_cell"] == 1 ) // (Adrianne) activated DCs that don't leave the tissue can further activate CD8s increasing their proliferation rate and attachment rates
+	else if( pCell->custom_data["activated_immune_cell"] == 1 && PhysiCell_globals.current_time < time_of_DC_departure) // (Adrianne) activated DCs that don't leave the tissue can further activate CD8s increasing their proliferation rate and attachment rates
 	{
 		std::vector<Cell*> neighbors = pCell->cells_in_my_container(); // (Adrianne) find cells in a neighbourhood of DCs
 		int n = 0; 
@@ -824,18 +845,14 @@ void DC_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
 			pTestCell = neighbors[n]; 
 			// if it is not me and the target is dead 
 			if( pTestCell != pCell && pTestCell->phenotype.death.dead == false && pTestCell->type == CD8_Tcell_type ) // (Adrianne) check if any neighbour cells are live T cells
-			{			
+			{		
 				pTestCell-> custom_data["cell_attachment_rate"] = parameters.doubles("DC_induced_CD8_attachment"); // (Adrianne) DC induced T cell attachement rate
-				//pTestCell-> custom_data["cell_attachment_rate"] = parameters.doubles("DC_induced_CD8_proliferation"); // (Adrianne) DC induced T cell proliferation rate STILL TO WRITE
 				
-			/*<phenotype>
-				<cycle code="6" name="flow_cytometry_separated_cycle_model">  
-					<!-- using higher than normal significant digits to match divisions in default code -->
-					<phase_transition_rates units="1/min"> 
-						<!-- G0/G1 to S -->
-						<rate start_index="0" end_index="1" fixed_duration="false">0</rate>
+				// (Adrianne) finding the G0G1 and S phase index and setting the transition rate to be non zero so that CD8 T cells start proliferating after interacting with DC
+				int cycle_G0G1_index = Ki67_basic.find_phase_index( PhysiCell_constants::G0G1_phase ); 
+				int cycle_S_index = Ki67_basic.find_phase_index( PhysiCell_constants::S_phase ); 
+				pCell->phenotype.cycle.data.transition_rate(cycle_G0G1_index,cycle_S_index) = parameters.doubles("DC_induced_CD8_proliferation"); 			
 				
-				*/
 				//(Adrianne) double proliferation rate
 				std::cout<<"DC further activates T cell"<<std::endl;
 				return;
@@ -868,6 +885,7 @@ void DC_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
 				if( pTestCell != pCell && pTestCell->phenotype.death.dead == false && pTestCell->custom_data[nP]>1 )
 				{			
 					pCell->custom_data["activated_immune_cell"] = 1.0; 
+					pCell->custom_data["time_of_DC_departure"] = PhysiCell_globals.current_time+(23*UniformRandom()+1)*60; // (Adrianne) calculating the time till DC exits the tissue uniform random vairable between 1 and 24
 					std::cout<<"DC becomes activated by infected cell"<<std::endl;
 					return;
 				}
@@ -978,6 +996,28 @@ void immune_submodels_setup( void )
 	pCD->functions.custom_cell_rule = DC_submodel_info.mechanics_function;	
 	pCD->functions.update_migration_bias = immune_cell_motility_direction; 
 	
+		// (Adrianne) set up CD4 Tcells ** we don't want CD4's to do anything expect be recruited to the tissue and migrate in tissue
+		// set version info 
+	CD4_submodel_info.name = "CD4 Tcell model"; 
+	CD4_submodel_info.version = immune_submodels_version; 
+		// set functions 
+	CD4_submodel_info.main_function = NULL; 
+	CD4_submodel_info.phenotype_function = NULL; 
+	CD4_submodel_info.mechanics_function = NULL; 
+		// what microenvironment variables do you expect? 
+	CD4_submodel_info.microenvironment_variables.push_back( "virion" ); 
+	CD4_submodel_info.microenvironment_variables.push_back( "interferon 1" ); 
+	CD4_submodel_info.microenvironment_variables.push_back( "pro-inflammatory cytokine" ); 
+	CD4_submodel_info.microenvironment_variables.push_back( "chemokine" ); 
+		// what custom data do I need? 
+	//CD8_submodel_info.cell_variables.push_back( "something" ); 
+		// register the submodel  
+	CD4_submodel_info.register_model();	
+		// set functions for the corresponding cell definition 
+	pCD = find_cell_definition( "CD4 Tcell" ); 
+	pCD->functions.update_phenotype = CD4_submodel_info.phenotype_function;
+	pCD->functions.custom_cell_rule = CD4_submodel_info.mechanics_function;
+	pCD->functions.update_migration_bias = immune_cell_motility_direction; 
 }
 
 Cell* check_for_live_neighbor_for_interaction( Cell* pAttacker , double dt )
@@ -1066,10 +1106,14 @@ Cell* immune_cell_check_neighbors_for_attachment( Cell* pAttacker , double dt )
 int recruited_Tcells = 0; 
 int recruited_neutrophils = 0; 
 int recruited_macrophages = 0; 
+int recruited_CD4Tcells = 0; 
+int recruited_DCs = 0; 
 
 double first_macrophage_recruitment_time = 9e9; 
 double first_neutrophil_recruitment_time = 9e9; 
 double first_CD8_T_cell_recruitment_time = 9e9; 
+double first_CD4_T_cell_recruitment_time = 9e9; 
+double first_DC_recruitment_time = 9e9; 
 
 void immune_cell_recruitment( double dt )
 {
@@ -1132,7 +1176,6 @@ void immune_cell_recruitment( double dt )
 		}
 		
 		// neutrophil recruitment 
-		
 		static double neutrophil_recruitment_rate = parameters.doubles( "neutrophil_max_recruitment_rate" ); 
 		static double NR_min_signal = parameters.doubles( "neutrophil_recruitment_min_signal" ); 
 		static double NR_sat_signal = parameters.doubles( "neutrophil_recruitment_saturation_signal" ); 
@@ -1175,7 +1218,6 @@ void immune_cell_recruitment( double dt )
 		}
 		
 		// CD8 Tcell recruitment 
-		
 		static double CD8_Tcell_recruitment_rate = parameters.doubles( "CD8_Tcell_max_recruitment_rate" ); 
 		static double TC_min_signal = parameters.doubles( "CD8_Tcell_recruitment_min_signal" ); 
 		static double TC_sat_signal = parameters.doubles( "CD8_Tcell_recruitment_saturation_signal" ); 
@@ -1220,7 +1262,98 @@ void immune_cell_recruitment( double dt )
 		t_last_immune = t_immune; 
 		t_next_immune = t_immune + dt_immune; 
 		
+		// (Adrianne) CD4 T cell recruitment - *** This section will be changed to be Tarun's model so I've left recruitment parameters to be CD8 cell parameters**
+		static double CD4_Tcell_recruitment_rate = parameters.doubles( "CD8_Tcell_max_recruitment_rate" ); 
+		static double CD4TC_min_signal = parameters.doubles( "CD8_Tcell_recruitment_min_signal" ); 
+		static double CD4TC_sat_signal = parameters.doubles( "CD8_Tcell_recruitment_saturation_signal" ); 
+		static double CD4TC_max_minus_min = CD4TC_sat_signal - CD4TC_min_signal; 
+		
+		total_rate = 0;
+		// integrate \int_domain r_max * (signal-signal_min)/(signal_max-signal_min) * dV 
+		total_scaled_signal= 0.0;
+		for( int n=0; n<microenvironment.mesh.voxels.size(); n++ )
+		{
+			// (signal(x)-signal_min)/(signal_max/signal_min)
+			double dRate = ( microenvironment(n)[proinflammatory_cytokine_index] - CD4TC_min_signal ); 
+			dRate /= CD4TC_max_minus_min; 
+			// crop to [0,1] 
+			if( dRate > 1 ) 
+			{ dRate = 1; } 
+			if( dRate < 0 )
+			{ dRate = 0; }
+			total_rate += dRate; 
+		}	
+		// multiply by dV and rate_max 
+		total_scaled_signal = total_rate; 
+		
+		total_rate *= microenvironment.mesh.dV; 
+		total_rate *= CD4_Tcell_recruitment_rate; 
+		
+		// expected number of new neutrophils 
+		number_of_new_cells = (int) round( total_rate * elapsed_time ); 
+		recruited_CD4Tcells += number_of_new_cells;		
+		
+		if( number_of_new_cells )
+		{
+			if( t_immune < first_CD4_T_cell_recruitment_time )
+			{ first_CD4_T_cell_recruitment_time = t_immune; }
+			
+			std::cout << "\tRecruiting " << number_of_new_cells << " CD4 T cells ... " << std::endl; 
+
+			for( int n = 0; n < number_of_new_cells ; n++ )
+			{ create_infiltrating_CD4Tcell(); }
+		}
+		
+		t_last_immune = t_immune; 
+		t_next_immune = t_immune + dt_immune; 
+		
+		// (Adrianne) DC recruitment - *** This section will be changed to be Tarun's model  so I've left recruitment parameters to be CD8 cell parameters**
+		static double DC_recruitment_rate = parameters.doubles( "CD8_Tcell_max_recruitment_rate" ); 
+		static double DC_min_signal = parameters.doubles( "CD8_Tcell_recruitment_min_signal" ); 
+		static double DC_sat_signal = parameters.doubles( "CD8_Tcell_recruitment_saturation_signal" ); 
+		static double DC_max_minus_min = DC_sat_signal - DC_min_signal; 
+		
+		total_rate = 0;
+		// integrate \int_domain r_max * (signal-signal_min)/(signal_max-signal_min) * dV 
+		total_scaled_signal= 0.0;
+		for( int n=0; n<microenvironment.mesh.voxels.size(); n++ )
+		{
+			// (signal(x)-signal_min)/(signal_max/signal_min)
+			double dRate = ( microenvironment(n)[proinflammatory_cytokine_index] - DC_min_signal ); 
+			dRate /= DC_max_minus_min; 
+			// crop to [0,1] 
+			if( dRate > 1 ) 
+			{ dRate = 1; } 
+			if( dRate < 0 )
+			{ dRate = 0; }
+			total_rate += dRate; 
+		}	
+		// multiply by dV and rate_max 
+		total_scaled_signal = total_rate; 
+		
+		total_rate *= microenvironment.mesh.dV; 
+		total_rate *= DC_recruitment_rate; 
+		
+		// expected number of new neutrophils 
+		number_of_new_cells = (int) round( total_rate * elapsed_time ); 
+		recruited_DCs += number_of_new_cells;		
+		
+		if( number_of_new_cells )
+		{
+			if( t_immune < first_DC_recruitment_time )
+			{ first_DC_recruitment_time = t_immune; }
+			
+			std::cout << "\tRecruiting " << number_of_new_cells << " DCs ... " << std::endl; 
+
+			for( int n = 0; n < number_of_new_cells ; n++ )
+			{ create_infiltrating_DC(); }
+		}
+		
+		t_last_immune = t_immune; 
+		t_next_immune = t_immune + dt_immune; 
+		
 	}
+		
 	t_immune += dt; 
 	
 	return; 
@@ -1232,6 +1365,7 @@ void initial_immune_cell_placement( void )
 	Cell_Definition* pMF = find_cell_definition( "macrophage" ); 
 	Cell_Definition* pN = find_cell_definition( "neutrophil" ); 
 	Cell_Definition* pDC = find_cell_definition( "DC" ); 
+	Cell_Definition* pCD4 = find_cell_definition( "CD4 T cell" ); 
 	
 	// CD8+ T cells; 
 	for( int n = 0 ; n < parameters.ints("number_of_CD8_Tcells") ; n++ )
@@ -1248,6 +1382,11 @@ void initial_immune_cell_placement( void )
 	// DC	
 	for( int n = 0 ; n < parameters.ints("number_of_DCs") ; n++ )
 	{ create_infiltrating_immune_cell_initial( pDC ); }		
+	return;
+	
+	// CD4+ T cells	
+	for( int n = 0 ; n < parameters.ints("number_of_CD4_Tcells") ; n++ )
+	{ create_infiltrating_immune_cell_initial( pCD4 ); }		
 	return;
 }
 

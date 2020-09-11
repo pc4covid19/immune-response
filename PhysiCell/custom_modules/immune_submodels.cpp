@@ -831,17 +831,14 @@ void DC_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
 	// (Adrianne) if DC is already activated, then check whether it leaves the tissue
 	if( pCell->custom_data["activated_immune_cell"] == 1 && PhysiCell_globals.current_time >= time_of_DC_departure)
 	{
-		std::cout<<"DC about to die"<<std::endl;
 		// (Adrianne) DC leaves the tissue and so we delete that DC
 		delete_cell( pCell );
-		std::cout<<"DC leaves tissue"<<std::endl;
 		return;
 		
 	}
 	else if( pCell->custom_data["activated_immune_cell"] == 1 && PhysiCell_globals.current_time < time_of_DC_departure) // (Adrianne) activated DCs that don't leave the tissue can further activate CD8s increasing their proliferation rate and attachment rates
 	{
 		
-		std::cout<<"Activated DC not ready to die"<<std::endl;
 		std::vector<Cell*> neighbors = pCell->cells_in_my_container(); // (Adrianne) find cells in a neighbourhood of DCs
 		int n = 0; 
 		Cell* pTestCell = neighbors[n]; 
@@ -852,7 +849,6 @@ void DC_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
 			if( pTestCell != pCell && pTestCell->phenotype.death.dead == false && pTestCell->type == CD8_Tcell_type ) // (Adrianne) check if any neighbour cells are live T cells
 			{		
 			
-				std::cout<<"Activated DC not ready to die finds CD8"<<std::endl;
 				pTestCell-> custom_data["cell_attachment_rate"] = parameters.doubles("DC_induced_CD8_attachment"); // (Adrianne) DC induced T cell attachement rate
 				
 				// (Adrianne) finding the G0G1 and S phase index and setting the transition rate to be non zero so that CD8 T cells start proliferating after interacting with DC
@@ -861,7 +857,6 @@ void DC_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
 				pTestCell->phenotype.cycle.data.transition_rate(cycle_G0G1_index,cycle_S_index) = parameters.doubles("DC_induced_CD8_proliferation"); 			
 				
 				n = neighbors.size();
-				std::cout<<"Activated DC not ready to die finds CD8 and induced hyperactive"<<std::endl;
 				
 			}
 			
@@ -869,26 +864,21 @@ void DC_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
 			
 		}
 		
-		std::cout<<"Activated DC finds no CD8 cells"<<std::endl;
 		return;
 	}
 	else 
 	{
 		
-		std::cout<<"Naive DC"<<std::endl;
 		// (adrianne) DCs become activated if there is an infected cell in their neighbour with greater 1 viral protein or if the local amount of virus is greater than 10
 		static int virus_index = microenvironment.find_density_index("virion");
 		double virus_amount = pCell->nearest_density_vector()[virus_index];
 		if( virus_amount*microenvironment.mesh.voxels[1].volume > 10) // (Adrianne) amount of virus in local voxel with DC is greater than 10
 		{
 			
-		std::cout<<"Naive DC activated by virus"<<std::endl;
 			pCell->custom_data["activated_immune_cell"] = 1.0; // (Adrianne) DC becomes activated
-			std::cout<<"DC becomes activated by virus"<<std::endl;
 		}
 		else //(Adrianne) check for infected cells nearby
 		{	
-			std::cout<<"Naive DC checking neighbours"<<std::endl;
 			std::vector<Cell*> neighbors = pCell->cells_in_my_container();
 			int n = 0; 
 			Cell* pTestCell = neighbors[n]; 
@@ -901,12 +891,14 @@ void DC_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
 				{			
 					pCell->custom_data["activated_immune_cell"] = 1.0; 
 					pCell->custom_data["time_of_DC_departure"] = PhysiCell_globals.current_time+(23*UniformRandom()+1)*60; // (Adrianne) calculating the time till DC exits the tissue uniform random vairable between 1 and 24
-					std::cout<<"DC becomes activated by infected cell and leaves at "<<pCell->custom_data["time_of_DC_departure"]<<std::endl;
-					return;
+					
+					n = neighbors.size();
+					
 				}
 				
 				n++; 
 			}
+			return;
 		}
 	}
 	

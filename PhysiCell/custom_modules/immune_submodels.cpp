@@ -821,6 +821,7 @@ void neutrophil_mechanics( Cell* pCell, Phenotype& phenotype, double dt )
 // (Adrianne) DC phenotype function
 void DC_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
 {
+	
 	// (Adrianne) probability of activated DC departing after activation
 	double time_of_DC_departure = pCell->custom_data["time_of_DC_departure"]; 
 
@@ -830,13 +831,17 @@ void DC_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
 	// (Adrianne) if DC is already activated, then check whether it leaves the tissue
 	if( pCell->custom_data["activated_immune_cell"] == 1 && PhysiCell_globals.current_time >= time_of_DC_departure)
 	{
+		std::cout<<"DC about to die"<<std::endl;
 		// (Adrianne) DC leaves the tissue and so we delete that DC
 		delete_cell( pCell );
 		std::cout<<"DC leaves tissue"<<std::endl;
 		return;
+		
 	}
 	else if( pCell->custom_data["activated_immune_cell"] == 1 && PhysiCell_globals.current_time < time_of_DC_departure) // (Adrianne) activated DCs that don't leave the tissue can further activate CD8s increasing their proliferation rate and attachment rates
 	{
+		
+		std::cout<<"Activated DC not ready to die"<<std::endl;
 		std::vector<Cell*> neighbors = pCell->cells_in_my_container(); // (Adrianne) find cells in a neighbourhood of DCs
 		int n = 0; 
 		Cell* pTestCell = neighbors[n]; 
@@ -846,33 +851,44 @@ void DC_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
 			// if it is not me and the target is dead 
 			if( pTestCell != pCell && pTestCell->phenotype.death.dead == false && pTestCell->type == CD8_Tcell_type ) // (Adrianne) check if any neighbour cells are live T cells
 			{		
+			
+				std::cout<<"Activated DC not ready to die finds CD8"<<std::endl;
 				pTestCell-> custom_data["cell_attachment_rate"] = parameters.doubles("DC_induced_CD8_attachment"); // (Adrianne) DC induced T cell attachement rate
 				
 				// (Adrianne) finding the G0G1 and S phase index and setting the transition rate to be non zero so that CD8 T cells start proliferating after interacting with DC
 				int cycle_G0G1_index = flow_cytometry_separated_cycle_model.find_phase_index( PhysiCell_constants::G0G1_phase ); 
 				int cycle_S_index = flow_cytometry_separated_cycle_model.find_phase_index( PhysiCell_constants::S_phase ); 
 				pTestCell->phenotype.cycle.data.transition_rate(cycle_G0G1_index,cycle_S_index) = parameters.doubles("DC_induced_CD8_proliferation"); 			
-								
 				
-				return;
+				n = neighbors.size();
+				std::cout<<"Activated DC not ready to die finds CD8 and induced hyperactive"<<std::endl;
+				
 			}
 			
 			n++; 
+			
 		}
+		
+		std::cout<<"Activated DC finds no CD8 cells"<<std::endl;
 		return;
 	}
 	else 
 	{
+		
+		std::cout<<"Naive DC"<<std::endl;
 		// (adrianne) DCs become activated if there is an infected cell in their neighbour with greater 1 viral protein or if the local amount of virus is greater than 10
 		static int virus_index = microenvironment.find_density_index("virion");
 		double virus_amount = pCell->nearest_density_vector()[virus_index];
 		if( virus_amount*microenvironment.mesh.voxels[1].volume > 10) // (Adrianne) amount of virus in local voxel with DC is greater than 10
 		{
+			
+		std::cout<<"Naive DC activated by virus"<<std::endl;
 			pCell->custom_data["activated_immune_cell"] = 1.0; // (Adrianne) DC becomes activated
 			std::cout<<"DC becomes activated by virus"<<std::endl;
 		}
 		else //(Adrianne) check for infected cells nearby
 		{	
+			std::cout<<"Naive DC checking neighbours"<<std::endl;
 			std::vector<Cell*> neighbors = pCell->cells_in_my_container();
 			int n = 0; 
 			Cell* pTestCell = neighbors[n]; 
@@ -893,6 +909,7 @@ void DC_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
 			}
 		}
 	}
+	
 	return; 
 }
 
@@ -1054,10 +1071,13 @@ void immune_submodels_setup( void )
 	pCD->functions.custom_cell_rule = DC_submodel_info.mechanics_function;	
 	pCD->functions.update_migration_bias = immune_cell_motility_direction; 
 	
+	
 		// (Adrianne) set up CD4 Tcells ** we don't want CD4's to do anything expect be recruited to the tissue and migrate in tissue
 		// set version info 
+	CD4_submodel_info = CD8_submodel_info; // much shared information 
 	CD4_submodel_info.name = "CD4 Tcell model"; 
 	CD4_submodel_info.version = immune_submodels_version; 
+	
 		// set functions 
 	CD4_submodel_info.main_function = NULL; 
 	CD4_submodel_info.phenotype_function = CD4_Tcell_phenotype; 
@@ -1320,6 +1340,7 @@ void immune_cell_recruitment( double dt )
 		t_last_immune = t_immune; 
 		t_next_immune = t_immune + dt_immune; 
 		
+		
 		// (Adrianne) CD4 T cell recruitment - *** This section will be changed to be Tarun's model so I've left recruitment parameters to be CD8 cell parameters**
 		static double CD4_Tcell_recruitment_rate = parameters.doubles( "CD8_Tcell_max_recruitment_rate" ); 
 		static double CD4TC_min_signal = parameters.doubles( "CD8_Tcell_recruitment_min_signal" ); 
@@ -1412,6 +1433,7 @@ void immune_cell_recruitment( double dt )
 		t_next_immune = t_immune + dt_immune; 
 		
 	}
+	
 		
 	t_immune += dt; 
 	

@@ -872,7 +872,7 @@ void DC_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
 		// (adrianne) DCs become activated if there is an infected cell in their neighbour with greater 1 viral protein or if the local amount of virus is greater than 10
 		static int virus_index = microenvironment.find_density_index("virion");
 		double virus_amount = pCell->nearest_density_vector()[virus_index];
-		if( virus_amount*microenvironment.mesh.voxels[1].volume > 10) // (Adrianne) amount of virus in local voxel with DC is greater than 10
+		if( virus_amount*microenvironment.mesh.voxels[1].volume > parameters.doubles("virions_needed_for_DC_activation")) // (Adrianne) amount of virus in local voxel with DC is greater than 10
 		{
 			
 			pCell->custom_data["activated_immune_cell"] = 1.0; // (Adrianne) DC becomes activated

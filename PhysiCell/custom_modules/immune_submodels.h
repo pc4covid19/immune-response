@@ -58,6 +58,10 @@ void DC_phenotype( Cell* pCell, Phenotype& phenotype, double dt );
 void DC_mechanics( Cell* pCell, Phenotype& phenotype, double dt ); 
 
 
+// (Adrianne) CD4 phenotype and mechanics functions
+void CD4_Tcell_mechanics( Cell* pCell, Phenotype& phenotype, double dt );
+void CD4_Tcell_phenotype( Cell* pCell, Phenotype& phenotype, double dt );
+
 // this damage response will need to be added to the "infected cell response" model 
 // void TCell_induced_apoptosis( Cell* pCell, Phenotype& phenotype, double dt ); 
 

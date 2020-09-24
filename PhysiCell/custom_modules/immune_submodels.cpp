@@ -821,22 +821,19 @@ void neutrophil_mechanics( Cell* pCell, Phenotype& phenotype, double dt )
 // (Adrianne) DC phenotype function
 void DC_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
 {
-	
-	// (Adrianne) probability of activated DC departing after activation
-	double time_of_DC_departure = pCell->custom_data["time_of_DC_departure"]; 
-
 	// (Adrianne) get type of CD8+ T cell
 	static int CD8_Tcell_type = get_cell_definition( "CD8 Tcell" ).type;
 	
 	// (Adrianne) if DC is already activated, then check whether it leaves the tissue
-	if( pCell->custom_data["activated_immune_cell"] == 1 && PhysiCell_globals.current_time >= time_of_DC_departure)
+	if( pCell->custom_data["activated_immune_cell"] >  0.5 && UniformRandom()<0.005)
 	{
-		// (Adrianne) DC leaves the tissue and so we delete that DC
-		delete_cell( pCell );
+		// (Adrianne) DC leaves the tissue and so we lyse that DC
+		std::cout<<"DC leaves tissue"<<std::endl;
+		pCell->lyse_cell(); 
 		return;
 		
 	}
-	else if( pCell->custom_data["activated_immune_cell"] == 1 && PhysiCell_globals.current_time < time_of_DC_departure) // (Adrianne) activated DCs that don't leave the tissue can further activate CD8s increasing their proliferation rate and attachment rates
+	else if( pCell->custom_data["activated_immune_cell"] > 0.5 ) // (Adrianne) activated DCs that don't leave the tissue can further activate CD8s increasing their proliferation rate and attachment rates
 	{
 		
 		std::vector<Cell*> neighbors = pCell->cells_in_my_container(); // (Adrianne) find cells in a neighbourhood of DCs
@@ -890,7 +887,6 @@ void DC_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
 				if( pTestCell != pCell && pTestCell->phenotype.death.dead == false && pTestCell->custom_data[nP]>1 )
 				{			
 					pCell->custom_data["activated_immune_cell"] = 1.0; 
-					pCell->custom_data["time_of_DC_departure"] = PhysiCell_globals.current_time+(23*UniformRandom()+1)*60; // (Adrianne) calculating the time till DC exits the tissue uniform random vairable between 1 and 24
 					
 					n = neighbors.size();
 					
@@ -1117,7 +1113,6 @@ Cell* check_for_dead_neighbor_for_interaction( Cell* pAttacker , double dt )
 	}
 	return NULL; 
 }
-
 
 bool attempt_immune_cell_attachment( Cell* pAttacker, Cell* pTarget , double dt )
 {

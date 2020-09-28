@@ -563,20 +563,28 @@ void macrophage_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
 	// (Adrianne) get type of CD8+ T cell and CD4+ t CELL
 	static int CD8_Tcell_type = get_cell_definition( "CD8 Tcell" ).type; 
 	static int CD4_Tcell_type = get_cell_definition( "CD4 Tcell" ).type; 
-	// (Adrianne) if there is a T cell in a mac's neighbourhood AND a mac has already begin phagocytosing, then mac will stop secretion of pro-inflam cytokine (until it re-phagocytoses something)
+	
+	// (Adrianne) if there is a T cell in a mac's neighbourhood AND a mac has already begin phagocytosing, then there will be changes to the macs actions 
 	int n = 0; 
 	Cell* pContactCell = neighbors[n]; 
 	while( n < neighbors.size() )
 	{
 		pContactCell = neighbors[n]; 
-		// (Adrianne) if it is not me, not dead and is a T cell 
 		
-		if( pContactCell != pCell && pContactCell->phenotype.death.dead == false && pContactCell->type == CD8_Tcell_type && pCell->custom_data["activated_immune_cell"] > 0.5) 
+		double cell_cell_distance = sqrt((pContactCell->position[0]-pCell->position[0])*(pContactCell->position[0]-pCell->position[0])+(pContactCell->position[1]-pCell->position[1])*(pContactCell->position[1]-pCell->position[1]));
+		double radius_mac = pCell->phenotype.geometry.radius; // (Adrianne) radius of DC)
+		double radius_test_cell = pContactCell->phenotype.geometry.radius; // (Adrianne) radius of test cell)
+					
+		// (Adrianne) if it is not me, not dead and is a CD8 T cell that is within a very short distance from me, I will stop secreting pro-inflammatory cytokine
+		if( pContactCell != pCell && pContactCell->phenotype.death.dead == false && pContactCell->type == CD8_Tcell_type 
+			&& pCell->custom_data["activated_immune_cell"] > 0.5 && cell_cell_distance<=parameters.doubles("epsilon_distance")*(radius_mac+radius_test_cell)) 
 		{
 			phenotype.secretion.secretion_rates[proinflammatory_cytokine_index] = 0;// (Adrianne) contact with CD8 T cell turns off pro-inflammatory cytokine secretion
 			n=neighbors.size();
 		}
-		else if( pContactCell != pCell && pContactCell->phenotype.death.dead == false && pContactCell->type == CD4_Tcell_type && pCell->custom_data["activated_immune_cell"] > 0.5) 
+		// (Adrianne) if it is not me, not dead and is a CD4 T cell that is within a very short distance from me, I will be able to phagocytose infected (but not neccesarily dead) cells
+		else if( pContactCell != pCell && pContactCell->phenotype.death.dead == false && pContactCell->type == CD4_Tcell_type 
+			&& pCell->custom_data["activated_immune_cell"] > 0.5 && cell_cell_distance<=parameters.doubles("epsilon_distance")*(radius_mac+radius_test_cell))
 		{
 			pCell->custom_data["ability_to_phagocytose_infected_cell"] = 1; // (Adrianne) contact with CD4 T cell induces macrophage's ability to phagocytose infected cells
 			n=neighbors.size();
@@ -842,8 +850,15 @@ void DC_phenotype( Cell* pCell, Phenotype& phenotype, double dt )
 		while( n < neighbors.size() )
 		{
 			pTestCell = neighbors[n]; 
-			// if it is not me and the target is dead 
-			if( pTestCell != pCell && pTestCell->phenotype.death.dead == false && pTestCell->type == CD8_Tcell_type ) // (Adrianne) check if any neighbour cells are live T cells
+			
+			// (Adrianne) find the euclidean distance between the DC and the cell it's testing
+			double cell_cell_distance = sqrt((pTestCell->position[0]-pCell->position[0])*(pTestCell->position[0]-pCell->position[0])+(pTestCell->position[1]-pCell->position[1])*(pTestCell->position[1]-pCell->position[1]));
+			double radius_DC = pCell->phenotype.geometry.radius; // (Adrianne) radius of DC)
+			double radius_test_cell = pTestCell->phenotype.geometry.radius; // (Adrianne) radius of test cell)
+			
+			// (Adrianne) check if any neighbour cells are live T cells and that they are close enough to the DC  
+			if( pTestCell != pCell && pTestCell->phenotype.death.dead == false && pTestCell->type == CD8_Tcell_type 
+				&& cell_cell_distance<=parameters.doubles("epsilon_distance")*(radius_DC+radius_test_cell)) 
 			{		
 			
 				pTestCell-> custom_data["cell_attachment_rate"] = parameters.doubles("DC_induced_CD8_attachment"); // (Adrianne) DC induced T cell attachement rate

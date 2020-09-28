@@ -780,6 +780,9 @@
 		<!-- (Adrianne) number of virions in voxel to activate DC, chosen arbitrarily for now -->
 			<virions_needed_for_DC_activation type="int" units="virions"
 				descriptions="Number of virions needed to activate DC">10</virions_needed_for_DC_activation>
+		<!-- (Adrianne) multiple of the radii of the two immune cells interacting to check they are close enough-->		
+		<epsilon_distance type="double" units="dimensionless"
+				descriptions="Multiple of interaction distance for immune cells">1.75</epsilon_distance>
 				
 			<perecentage_tissue_vascularized units="percentage" type="double"
 				description="percentage of tissue sitting above blood vessels">8.8</perecentage_tissue_vascularized>			

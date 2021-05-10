@@ -248,6 +248,36 @@ void setup_tissue( void )
 	{
 		std::cout << "Infecting center cell with one virion ... " << std::endl; 
 		pNearestCell->phenotype.molecular.internalized_total_substrates[ nV ] = 1.0; 
+			std::vector<double> position = {0,0,0}; 
+			position[0] = 100; 
+			position[1] = 200; 
+			int m = microenvironment.nearest_voxel_index( position ); 
+			microenvironment(m)[nV] += single_virion_density_change*5; 
+			
+			position[0] = -300; 
+			position[1] = -100; 
+			m = microenvironment.nearest_voxel_index( position ); 
+			microenvironment(m)[nV] += single_virion_density_change*5; 
+			
+			position[0] = -200; 
+			position[1] = 150; 
+			m = microenvironment.nearest_voxel_index( position ); 
+			microenvironment(m)[nV] += single_virion_density_change*5; 
+			
+			position[0] = -200; 
+			position[1] = 150; 
+			m = microenvironment.nearest_voxel_index( position ); 
+			microenvironment(m)[nV] += single_virion_density_change*5; 
+						
+			position[0] = 250; 
+			position[1] = -280; 
+			m = microenvironment.nearest_voxel_index( position ); 
+			microenvironment(m)[nV] += single_virion_density_change*5; 
+									
+			position[0] = 50; 
+			position[1] = 10; 
+			m = microenvironment.nearest_voxel_index( position ); 
+			microenvironment(m)[nV] += single_virion_density_change*5; 
 	}
 	else
 	{

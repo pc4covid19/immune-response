@@ -121,7 +121,7 @@ void internal_virus_response_model( Cell* pCell, Phenotype& phenotype, double dt
 		phenotype.secretion.saturation_densities[chemokine_index] = 1.0;
 
 		// (Adrianne) adding pro-inflammatory cytokine secretion by infected cells
-		pCell->phenotype.secretion.secretion_rates[proinflammatory_cytokine_index] = pCell->custom_data["activated_cytokine_secretion_rate"]/10;
+		pCell->phenotype.secretion.secretion_rates[proinflammatory_cytokine_index] = pCell->custom_data["activated_cytokine_secretion_rate"];
 	}
 	
 	// (Adrianne) check whether the cell is undergoing pyroptosis and if so, evalute the pyropotosis model

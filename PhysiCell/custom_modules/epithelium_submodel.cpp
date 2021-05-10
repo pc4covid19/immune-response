@@ -208,7 +208,7 @@ void ROS_induced_apoptosis( Cell* pCell, Phenotype& phenotype, double dt )
 	
 	if( UniformRandom() < prob_apoptosis )
 	{
-		
+		std::cout<<ROS_amount<<" "<<epsilon_ROS<<std::endl;
 		// make sure to get rid of all adhesions! 
 		// detach all attached cells 
 		// remove_all_adhesions( pCell ); 

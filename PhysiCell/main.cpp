@@ -83,6 +83,15 @@
 using namespace BioFVM;
 using namespace PhysiCell;
 
+std::string COVID19_version = "0.4.0"; 
+
+double DM = 0; // global ICs
+double TC = 10;
+double TH1 = 1;
+double TH2 = 1;
+double TCt = 0;
+double Tht = 0;
+
 int main( int argc, char* argv[] )
 {
 	// load and parse settings file(s)
@@ -105,7 +114,6 @@ int main( int argc, char* argv[] )
 	
 	setup_microenvironment(); // modify this in the custom code 
 	
-	choose_initialized_voxels();
 	/* PhysiCell setup */ 
  	
 	// set mechanics voxel size, and match the data structure to BioFVM
@@ -115,10 +123,10 @@ int main( int argc, char* argv[] )
 	/* Users typically start modifying here. START USERMODS */ 
 	
 	create_cell_types();
-	
 	setup_tissue();
 	
-
+	/* test space */
+	
 	/* Users typically stop modifying here. END USERMODS */ 
 	
 	// set MultiCellDS save options 
@@ -141,10 +149,11 @@ int main( int argc, char* argv[] )
 
 	// for simplicity, set a pathology coloring function 
 	
-	std::vector<std::string> (*cell_coloring_function)(Cell*) = immune_coloring_function; 
+	std::vector<std::string> (*cell_coloring_function)(Cell*) = tissue_coloring_function; 
 	
 	sprintf( filename , "%s/initial.svg" , PhysiCell_settings.folder.c_str() ); 
-	SVG_plot( filename , microenvironment, 0.0 , PhysiCell_globals.current_time, cell_coloring_function );
+//	SVG_plot( filename , microenvironment, 0.0 , PhysiCell_globals.current_time, cell_coloring_function );
+	SVG_plot_virus( filename , microenvironment, 0.0 , PhysiCell_globals.current_time, cell_coloring_function );
 	
 	display_citations(); 
 	
@@ -162,7 +171,12 @@ int main( int argc, char* argv[] )
 		report_file<<"simulated time\tnum cells\tnum division\tnum death\twall time"<<std::endl;
 	}
 	
+	std::ofstream dm_tc_file;
+	dm_tc_file.open ("dm_tc.dat");
+	
 	// main loop 
+
+	std::cout << std::endl << std::endl << "***** This is COVID19 integrated version " << COVID19_version << ". *****" << std::endl << std::endl; 
 	
 	try 
 	{		
@@ -181,6 +195,8 @@ int main( int argc, char* argv[] )
 				{	
 					sprintf( filename , "%s/output%08u" , PhysiCell_settings.folder.c_str(),  PhysiCell_globals.full_output_index ); 
 					
+					dm_tc_file << DM << " " << TC << " " << TH1 << " " << TH2 << " " << TCt << " " << Tht << std::endl; //write globals data
+					
 					save_PhysiCell_to_MultiCellDS_xml_pugi( filename , microenvironment , PhysiCell_globals.current_time ); 
 				}
 				
@@ -194,9 +210,9 @@ int main( int argc, char* argv[] )
 				if( PhysiCell_settings.enable_SVG_saves == true )
 				{	
 					sprintf( filename , "%s/snapshot%08u.svg" , PhysiCell_settings.folder.c_str() , PhysiCell_globals.SVG_output_index ); 
-					SVG_plot( filename , microenvironment, 0.0 , PhysiCell_globals.current_time, cell_coloring_function );
+					SVG_plot_virus( filename , microenvironment, 0.0 , PhysiCell_globals.current_time, cell_coloring_function );
 					
-					PhysiCell_globals.SVG_output_index++; 
+ 					PhysiCell_globals.SVG_output_index++; 
 					PhysiCell_globals.next_SVG_save_time  += PhysiCell_settings.SVG_save_interval;
 				}
 			}
@@ -204,14 +220,31 @@ int main( int argc, char* argv[] )
 			// update the microenvironment
 			microenvironment.simulate_diffusion_decay( diffusion_dt );
 			
-			// run PhysiCell 			
+			//external_immune_main_model( diffusion_dt );
+			external_immune_model( diffusion_dt );
+			
+			// receptor dynamics 			
+			receptor_dynamics_main_model( diffusion_dt );
+			
+			// detach dead cells 
+			// detach_all_dead_cells( diffusion_dt );
+			
+			cells_to_move_from_edge.clear();
+		
+			// run PhysiCell 
 			((Cell_Container *)microenvironment.agent_container)->update_all_cells( PhysiCell_globals.current_time );
 			
 			/*
 			  Custom add-ons could potentially go here. 
 			*/
 			
+			process_tagged_cells_on_edge(); 
+			
+			move_exported_to_viral_field(); 
+			
 			immune_cell_recruitment( diffusion_dt ); 
+			
+			// keep_immune_cells_in_bounds( diffusion_dt ); 
 			
 			PhysiCell_globals.current_time += diffusion_dt;
 		}
@@ -224,6 +257,15 @@ int main( int argc, char* argv[] )
 	}
 	catch( const std::exception& e )
 	{ // reference to the base of a polymorphic object
+	
+		std::cout << "Something went wrong. Let's save data." << std::endl; 
+		
+		sprintf( filename , "%s/error" , PhysiCell_settings.folder.c_str() ); 
+		save_PhysiCell_to_MultiCellDS_xml_pugi( filename , microenvironment , PhysiCell_globals.current_time ); 
+		
+		sprintf( filename , "%s/error.svg" , PhysiCell_settings.folder.c_str() ); 
+		SVG_plot( filename , microenvironment, 0.0 , PhysiCell_globals.current_time, cell_coloring_function );
+	
 		std::cout << e.what(); // information from length_error printed
 	}
 	
@@ -233,12 +275,49 @@ int main( int argc, char* argv[] )
 	save_PhysiCell_to_MultiCellDS_xml_pugi( filename , microenvironment , PhysiCell_globals.current_time ); 
 	
 	sprintf( filename , "%s/final.svg" , PhysiCell_settings.folder.c_str() ); 
-	SVG_plot( filename , microenvironment, 0.0 , PhysiCell_globals.current_time, cell_coloring_function );
+//	SVG_plot( filename , microenvironment, 0.0 , PhysiCell_globals.current_time, cell_coloring_function );
+	SVG_plot_virus( filename , microenvironment, 0.0 , PhysiCell_globals.current_time, cell_coloring_function );
 	
 	// timer 
 	
 	std::cout << std::endl << "Total simulation runtime: " << std::endl; 
 	BioFVM::display_stopwatch_value( std::cout , BioFVM::runtime_stopwatch_value() ); 
 
+
+	
+	extern int recruited_neutrophils; 
+	extern int recruited_Tcells; 
+	extern int recruited_macrophages; 
+	
+	extern double first_macrophage_recruitment_time;
+	extern double first_neutrophil_recruitment_time; 
+	extern double first_CD8_T_cell_recruitment_time; 
+
+	std::cout << std::endl; 
+	std::cout << "recruited macrophages: " << recruited_macrophages << " starting at time " 
+		<< first_macrophage_recruitment_time <<	std::endl; 
+	std::cout << "recruited neutrophils: " << recruited_neutrophils << " starting at time " 
+		<< first_neutrophil_recruitment_time << std::endl; 
+	std::cout << "recruited T cells: " << recruited_Tcells << " starting at time "
+		<< first_CD8_T_cell_recruitment_time << std::endl << std::endl; 	
+	recruited_neutrophils = 0; 
+	recruited_Tcells = 0; 
+	recruited_macrophages = 0; 
+
+	for( int n =0 ; n < (*all_cells).size() ; n++ )
+	{
+		Cell* pC = (*all_cells)[n]; 
+		if( pC->type == 5 )
+		{ recruited_neutrophils++; }
+		if( pC->type == 3 )
+		{ recruited_Tcells++; }
+		if( pC->type == 4 )
+		{ recruited_macrophages++; }
+
+	}
+	std::cout << "remaining macrophages: " << recruited_macrophages << std::endl; 
+	std::cout << "remaining neutrophils: " << recruited_neutrophils << std::endl; 
+	std::cout << "remaining T cells: " << recruited_Tcells << std::endl; 
+	
 	return 0; 
 }

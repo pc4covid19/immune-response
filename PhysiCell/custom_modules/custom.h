@@ -69,8 +69,12 @@
 #include "../modules/PhysiCell_standard_modules.h" 
 
 #include "./submodel_data_structures.h" 
+#include "./internal_viral_dynamics.h"
+#include "./internal_viral_response.h" 
+#include "./external_immune.h"
+#include "./receptor_dynamics.h" 
 #include "./immune_submodels.h" 
-
+#include "./epithelium_submodel.h" 
 
 using namespace BioFVM; 
 using namespace PhysiCell;
@@ -84,20 +88,13 @@ void setup_tissue( void );
 void setup_microenvironment( void ); 
 
 // custom pathology coloring function 
-void create_infiltrating_neutrophil(void);
-void create_infiltrating_Tcell(void);
 
+std::string blue_yellow_interpolation( double min, double val, double max );
+std::vector<std::string> epithelium_coloring_function( Cell* );
+std::vector<std::string> tissue_coloring_function( Cell* );
 
-std::string blue_yellow_interpolation( double min, double val, double max ); 
+// eventually move this to a tissue submodel 
 
-std::vector<std::string> immune_coloring_function( Cell* );
+void move_exported_to_viral_field( void ); 
 
-
-// custom functions can go here 
-
-/*
-void predator_hunting_function( Cell* pCell, Phenotype& phenotype, double dt ); 
-void predator_cycling_function( Cell* pCell, Phenotype& phenotype, double dt ); 
-
-void prey_cycling_function( Cell* pCell , Phenotype& phenotype, double dt ); 
-*/
+void SVG_plot_virus( std::string filename , Microenvironment& M, double z_slice , double time, std::vector<std::string> (*cell_coloring_function)(Cell*) );
